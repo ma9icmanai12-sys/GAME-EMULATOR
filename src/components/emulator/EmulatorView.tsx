@@ -50,8 +50,8 @@ export const EmulatorView: React.FC<EmulatorViewProps> = ({
         className="pixelated-canvas w-full h-full max-w-[95%] max-h-[95%] object-contain"
       />
 
-      {/* Top Floating Mini HUD - Hidden during gameplay to avoid GUI overlay, appears on hover */}
-      <div className="absolute top-2 inset-x-4 flex items-center justify-between pointer-events-none z-20 text-xs opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300">
+      {/* Top Floating Mini HUD - stays visible enough to show the active game and controller state */}
+      <div className="absolute top-2 inset-x-4 flex items-center justify-between pointer-events-none z-20 text-xs opacity-100 transition-opacity duration-300">
         {/* Game Title & FPS */}
         <div className="flex items-center gap-2 bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full border border-neutral-700 pointer-events-auto shadow-md">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -171,8 +171,8 @@ export const EmulatorView: React.FC<EmulatorViewProps> = ({
         </div>
       )}
 
-      {/* Bottom In-Game Controls Bar - Auto-hides during active gameplay */}
-      <div className="absolute bottom-3 inset-x-4 flex items-center justify-between pointer-events-none z-20 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300">
+      {/* Bottom In-Game Controls Bar - always visible so players can immediately exit back to the menu */}
+      <div className="absolute bottom-3 inset-x-4 flex items-center justify-between pointer-events-none z-20 opacity-100 transition-opacity duration-300">
         <button
           onClick={onExitToMenu}
           className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900/90 hover:bg-neutral-800 text-neutral-200 rounded-lg border border-neutral-700 font-mono text-xs shadow-md transition-colors"

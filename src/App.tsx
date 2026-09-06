@@ -176,12 +176,42 @@ export default function App() {
   const selectedRomRef = useRef<RomItem | null>(selectedRom);
   selectedRomRef.current = selectedRom;
 
+  const p1StatusRef = useRef<PlayerStatus>(p1Status);
+  p1StatusRef.current = p1Status;
+
+  const p2StatusRef = useRef<PlayerStatus>(p2Status);
+  p2StatusRef.current = p2Status;
+
   const launchRomRef = useRef<(rom: RomItem) => Promise<void>>(() => Promise.resolve());
+  const exitToMenuRef = useRef<() => void>(() => {});
+
+  const exitToMenu = useCallback(() => {
+    if (engineRef.current) {
+      engineRef.current.stop();
+    }
+    setIsPaused(false);
+    setActiveRom(null);
+    setP1Status((prev) => ({ ...prev, activeButtons: new Set() }));
+    setP2Status((prev) => ({ ...prev, activeButtons: new Set() }));
+  }, []);
+  exitToMenuRef.current = exitToMenu;
 
   // Unified controller input handler for both real phone WebSockets and PC on-screen test controller
   const handleDirectInput = useCallback((slot: 1 | 2 | any, button: NesButton, state: boolean) => {
     const targetSlot = (slot === 2 || slot === "2") ? 2 : 1;
     const normBtn = (button ? String(button).toUpperCase() : "") as NesButton;
+
+    if (activeRomRef.current && state) {
+      const activeButtons = targetSlot === 1 ? p1StatusRef.current.activeButtons : p2StatusRef.current.activeButtons;
+      const isMenuCombo =
+        (normBtn === "SELECT" && activeButtons.has("START")) ||
+        (normBtn === "START" && activeButtons.has("SELECT"));
+
+      if (isMenuCombo) {
+        exitToMenuRef.current();
+        return;
+      }
+    }
 
     // 1. Update UI active buttons indicator
     if (targetSlot === 1) {
@@ -499,6 +529,20 @@ export default function App() {
   };
   launchRomRef.current = launchRom;
 
+  useEffect(() => {
+    if (!activeRom) return;
+
+    const handleKeyboardExit = (event: KeyboardEvent) => {
+      if (event.key === "Escape" || event.key === "Backspace") {
+        event.preventDefault();
+        exitToMenuRef.current();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyboardExit);
+    return () => window.removeEventListener("keydown", handleKeyboardExit);
+  }, [activeRom]);
+
   const handleCustomRomLoad = async (rom: RomItem, data: Uint8Array) => {
     if (!engineRef.current) return;
     setIsLoadingRom(true);
@@ -510,13 +554,6 @@ export default function App() {
     } finally {
       setIsLoadingRom(false);
     }
-  };
-
-  const exitToMenu = () => {
-    if (engineRef.current) {
-      engineRef.current.stop();
-    }
-    setActiveRom(null);
   };
 
   // If in pure Phone Controller Mode, render full-screen controller immediately
