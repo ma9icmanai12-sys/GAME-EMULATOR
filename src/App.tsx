@@ -53,15 +53,29 @@ function generateRoomId(): string {
 }
 
 export default function App() {
-  // Detect URL mode and room params
+  // Detect URL mode and room params (supports both query search and hash parameters)
   const urlParams = useMemo(() => {
     if (typeof window === "undefined") return new URLSearchParams();
-    return new URLSearchParams(window.location.search);
+    const search = window.location.search;
+    const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
+    const combined = search ? `${search}&${hash}` : `?${hash}`;
+    return new URLSearchParams(combined);
   }, []);
 
-  const isControllerParam =
-    urlParams.get("mode") === "controller" || urlParams.get("controller") === "1";
+  const isMobileScreen = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      window.innerWidth < 768 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    );
+  }, []);
+
   const initialRoomParam = urlParams.get("room") || "";
+  const isControllerParam =
+    urlParams.get("mode") === "controller" ||
+    urlParams.get("controller") === "1" ||
+    urlParams.get("role") === "controller" ||
+    (isMobileScreen && Boolean(initialRoomParam));
 
   const [roomId, setRoomId] = useState<string>(() => {
     return initialRoomParam ? initialRoomParam.toUpperCase() : generateRoomId();
@@ -70,6 +84,8 @@ export default function App() {
   const [appMode, setAppMode] = useState<AppMode>(
     isControllerParam ? "controller" : "tv"
   );
+
+  const [liveSocket, setLiveSocket] = useState<PartySocket | null>(null);
 
   // Selected layout option (Flagship: ArcadeFrontend HyperSpin wheel)
   const [currentLayout, setCurrentLayout] = useState<MenuLayoutOption>("arcade-frontend");
@@ -194,16 +210,20 @@ export default function App() {
 
   // Initialize Engine & Socket
   useEffect(() => {
-    const engine = new NesEngine({
-      onFpsChange: (val) => setFps(val),
-      onError: (err) => console.error("NES Engine error:", err),
-    });
-    engineRef.current = engine;
+    let engine: NesEngine | null = null;
+    if (appMode !== "controller") {
+      engine = new NesEngine({
+        onFpsChange: (val) => setFps(val),
+        onError: (err) => console.error("NES Engine error:", err),
+      });
+      engineRef.current = engine;
+    }
 
     const socket = new PartySocket();
     socketRef.current = socket;
+    setLiveSocket(socket);
 
-    if (!isControllerParam) {
+    if (appMode !== "controller") {
       // Host Registration
       socket.connectAsHost(roomId);
     } else {
@@ -235,10 +255,10 @@ export default function App() {
     });
 
     return () => {
-      engine.destroy();
+      if (engine) engine.destroy();
       socket.disconnect();
     };
-  }, [roomId, isControllerParam]);
+  }, [roomId, appMode]);
 
   // Fetch Google Drive folder ROMs dynamically on mount
   useEffect(() => {
@@ -422,14 +442,16 @@ export default function App() {
     setActiveRom(null);
   };
 
-  // If in pure Phone Controller Mode, render full-screen controller!
-  if (appMode === "controller" && socketRef.current) {
+  // If in pure Phone Controller Mode, render full-screen controller immediately
+  if (appMode === "controller") {
     return (
-      <PhoneController
-        socket={socketRef.current}
-        roomId={roomId}
-        onExit={() => setAppMode("tv")}
-      />
+      <div className="fixed inset-0 w-screen h-screen bg-[#0a0a0c] text-white overflow-hidden select-none">
+        <PhoneController
+          socket={liveSocket || socketRef.current || undefined}
+          roomId={roomId}
+          onExit={() => setAppMode("tv")}
+        />
+      </div>
     );
   }
 

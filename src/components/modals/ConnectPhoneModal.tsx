@@ -48,8 +48,8 @@ export const ConnectPhoneModal: React.FC<ConnectPhoneModalProps> = ({
   const isAisDev = currentOrigin.includes("ais-dev-");
   const suggestedSharedOrigin = currentOrigin.replace("ais-dev-", "ais-pre-");
 
-  // Default to public shared domain if on ais-dev so phones don't hit Google 403
-  const [useSharedDomain, setUseSharedDomain] = useState<boolean>(isAisDev);
+  // By default use current origin (or allow toggling to public shared ais-pre domain)
+  const [useSharedDomain, setUseSharedDomain] = useState<boolean>(false);
   const [customOrigin, setCustomOrigin] = useState<string>("");
 
   const activeOrigin = customOrigin.trim()
@@ -221,6 +221,10 @@ export const ConnectPhoneModal: React.FC<ConnectPhoneModalProps> = ({
             <div className="flex items-start gap-1.5">
               <span className="text-sky-400 font-black">3.</span>
               <span><strong>Play on this PC Right Now:</strong> Click <strong>"Test Controller on PC"</strong> or <strong>"Open Controller in New Window"</strong> below — works immediately without needing a phone!</span>
+            </div>
+            <div className="flex items-start gap-1.5">
+              <span className="text-rose-400 font-black">4.</span>
+              <span><strong>White Screen on Phone?</strong> If your phone displays a blank white screen with "Cookie check", mobile Safari/Chrome is blocking Google's third-party cookies. Switch to <strong>Dev Sandbox</strong> QR while signed in, or open the link directly in your browser.</span>
             </div>
           </div>
         </div>
