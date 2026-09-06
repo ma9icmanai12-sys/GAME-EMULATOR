@@ -583,7 +583,9 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
   return (
     <div className="fixed inset-0 bg-[#0a0a0c] text-white flex flex-col justify-between select-none touch-none overflow-hidden font-sans">
       {/* Top Controller Status Bar */}
-      <header className="h-12 sm:h-14 bg-zinc-950 border-b border-zinc-800 px-3 sm:px-6 flex items-center justify-between z-30 shrink-0">
+      <header
+        className={`${!isPortrait ? "h-10 sm:h-12" : "h-12 sm:h-14"} bg-zinc-950 border-b border-zinc-800 px-3 sm:px-6 flex items-center justify-between z-30 shrink-0`}
+      >
         <div className="flex items-center gap-2 sm:gap-3">
           {onExit && (
             <button
@@ -623,10 +625,19 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
           )}
 
           {/* Room info */}
-          <div className="hidden md:flex items-center gap-1 text-xs font-mono text-zinc-400">
-            <span>ROOM:</span>
-            <span className="text-amber-400 font-bold tracking-wider">{roomId}</span>
-          </div>
+          {!isPortrait && (
+            <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-zinc-400">
+              <span>ROOM:</span>
+              <span className="text-amber-400 font-bold tracking-wider">{roomId}</span>
+            </div>
+          )}
+
+          {isPortrait && (
+            <div className="hidden md:flex items-center gap-1 text-xs font-mono text-zinc-400">
+              <span>ROOM:</span>
+              <span className="text-amber-400 font-bold tracking-wider">{roomId}</span>
+            </div>
+          )}
         </div>
 
         {/* Right HUD Controls */}
@@ -783,8 +794,8 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
         </main>
       ) : (
         /* WIDESCREEN / LANDSCAPE CLASSIC NES CONTROLLER BODY */
-        <main className="flex-1 flex items-center justify-center p-2 sm:p-4 md:p-6 relative overflow-hidden">
-          <div className="w-full max-w-4xl h-full max-h-[520px] bg-[#caccd1] rounded-3xl p-3 sm:p-5 md:p-6 border-4 sm:border-8 border-[#9a9ea7] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(255,255,255,0.6)] flex flex-col justify-between relative overflow-hidden">
+        <main className="flex-1 flex items-center justify-center p-1 sm:p-2 md:p-4 relative overflow-hidden">
+          <div className="w-full h-full max-w-[calc(100vw-0.5rem)] max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-4rem)] bg-[#caccd1] rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 md:p-5 border-4 sm:border-8 border-[#9a9ea7] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(255,255,255,0.6)] flex flex-col justify-between relative overflow-hidden">
             {/* Corner Hardware Screw Details */}
             <div className="absolute top-2.5 left-2.5 w-2.5 h-2.5 rounded-full bg-[#838791] shadow-inner border border-zinc-500/40" />
             <div className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-[#838791] shadow-inner border border-zinc-500/40" />
@@ -803,49 +814,49 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
             </div>
 
             {/* Controller Top Branding Band */}
-            <div className="relative z-10 flex justify-between items-center px-3 sm:px-6">
-              <div className="flex items-center gap-2">
-                <div className="font-display font-black text-base sm:text-xl md:text-2xl text-[#e52521] tracking-tight uppercase italic drop-shadow-sm">
+            <div className="relative z-10 flex justify-between items-center px-2 sm:px-4">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-hidden">
+                <div className="font-display font-black text-base sm:text-lg md:text-xl text-[#e52521] tracking-tight uppercase italic drop-shadow-sm">
                   Nintendo
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-mono font-black text-zinc-600 uppercase tracking-widest hidden sm:inline">
+                <span className="text-[8px] sm:text-[9px] font-mono font-black text-zinc-600 uppercase tracking-widest hidden xs:inline">
                   ENTERTAINMENT SYSTEM
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="font-mono font-bold text-[10px] sm:text-xs text-zinc-600 uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-mono font-bold text-[8px] sm:text-[9px] text-zinc-600 uppercase tracking-widest hidden sm:inline">
                   WIRELESS CONTROLLER
                 </span>
-                <span className="px-2 py-0.5 rounded bg-zinc-800 text-white font-mono font-black text-[10px]">
+                <span className="px-1.5 sm:px-2 py-0.5 rounded bg-zinc-800 text-white font-mono font-black text-[8px] sm:text-[10px]">
                   {isP1 ? "CONTROLLER I" : "CONTROLLER II"}
                 </span>
               </div>
             </div>
 
             {/* Controller Interactive Surface: Left (D-PAD) | Center (SELECT/START) | Right (B / A) */}
-            <div className="relative z-20 flex-1 grid grid-cols-12 items-center gap-2 sm:gap-4 my-auto">
+            <div className="relative z-20 flex-1 grid grid-cols-12 items-center gap-1.5 sm:gap-3 my-1 sm:my-2">
               {/* LEFT: D-Pad */}
               <div className="col-span-5 flex items-center justify-center">
-                {renderDpad("w-40 h-40 sm:w-52 sm:h-52 md:w-60 md:h-60")}
+                {renderDpad("w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40")}
               </div>
 
               {/* CENTER: SELECT and START */}
-              <div className="col-span-2 flex flex-col items-center justify-center gap-6 sm:gap-8">
+              <div className="col-span-2 flex flex-col items-center justify-center gap-4 sm:gap-6">
                 <div className="transform -rotate-12">
                   {renderSelectStart()}
                 </div>
               </div>
 
               {/* RIGHT: Turbo and Action Buttons */}
-              <div className="col-span-5 flex flex-col items-center justify-center gap-3 sm:gap-4">
+              <div className="col-span-5 flex flex-col items-center justify-center gap-2 sm:gap-3">
                 {renderTurboButtons()}
-                {renderActionButtons("w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22", "text-xl sm:text-2xl md:text-3xl")}
+                {renderActionButtons("w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16", "text-base sm:text-lg md:text-xl")}
               </div>
             </div>
 
             {/* Bottom Footnote Bar */}
-            <div className="relative z-10 flex justify-between items-center text-[10px] sm:text-[11px] text-zinc-600 px-3 sm:px-6">
+            <div className="relative z-10 flex justify-between items-center text-[7px] sm:text-[9px] text-zinc-600 px-2 sm:px-4">
               <span className="font-mono font-bold uppercase tracking-wider text-zinc-500">
                 LOW-LATENCY WEBSOCKET MULTIPLAYER
               </span>
