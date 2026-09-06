@@ -21,6 +21,8 @@ export class PartySocket {
   private statusCbs: Set<(status: ConnectionStatus) => void> = new Set();
   private pingCbs: Set<(ping: number) => void> = new Set();
   private assignedCbs: Set<(slot: 1 | 2 | "spectator") => void> = new Set();
+  private hostStatusCbs: Set<(data: { hostConnected: boolean; roomId?: string }) => void> = new Set();
+  private hostConnected: boolean = false;
 
   constructor(customWsUrl?: string) {
     this.customWsUrl = customWsUrl;
@@ -36,6 +38,10 @@ export class PartySocket {
 
   public getPing(): number {
     return this.ping;
+  }
+
+  public isHostConnected(): boolean {
+    return this.hostConnected;
   }
 
   public connectAsHost(roomId: string) {
@@ -142,6 +148,16 @@ export class PartySocket {
           this.slot = msg.slot;
           this.assignedCbs.forEach((cb) => cb(msg.slot));
         }
+        if (typeof msg.hostConnected === "boolean") {
+          this.hostConnected = msg.hostConnected;
+          this.hostStatusCbs.forEach((cb) => cb({ hostConnected: msg.hostConnected, roomId: msg.roomId }));
+        }
+        break;
+
+      case "host-status":
+        this.hostConnected = !!msg.hostConnected;
+        if (msg.roomId) this.roomId = msg.roomId;
+        this.hostStatusCbs.forEach((cb) => cb({ hostConnected: !!msg.hostConnected, roomId: msg.roomId }));
         break;
 
       case "pong":
@@ -162,6 +178,15 @@ export class PartySocket {
     }
   }
 
+  public requestSlot(newSlot: 1 | 2) {
+    this.slot = newSlot;
+    this.send({
+      type: "join-controller",
+      roomId: this.roomId,
+      requestedSlot: newSlot,
+    });
+  }
+
   public sendInput(button: NesButton, state: boolean) {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
     this.send({
@@ -174,7 +199,7 @@ export class PartySocket {
     });
   }
 
-  private send(data: any) {
+  public send(data: any) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(data));
     }
@@ -271,5 +296,10 @@ export class PartySocket {
   public onAssigned(cb: (slot: 1 | 2 | "spectator") => void) {
     this.assignedCbs.add(cb);
     return () => this.assignedCbs.delete(cb);
+  }
+
+  public onHostStatus(cb: (data: { hostConnected: boolean; roomId?: string }) => void) {
+    this.hostStatusCbs.add(cb);
+    return () => this.hostStatusCbs.delete(cb);
   }
 }

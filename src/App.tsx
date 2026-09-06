@@ -52,6 +52,22 @@ function generateRoomId(): string {
   return result;
 }
 
+function getPersistentRoomId(initialParam?: string): string {
+  if (initialParam) return initialParam.toUpperCase();
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("nes_party_tv_room");
+      if (saved && saved.startsWith("NES-") && saved.length >= 7) {
+        return saved;
+      }
+      const fresh = generateRoomId();
+      localStorage.setItem("nes_party_tv_room", fresh);
+      return fresh;
+    } catch (e) {}
+  }
+  return generateRoomId();
+}
+
 export default function App() {
   // Detect URL mode and room params (supports both query search and hash parameters)
   const urlParams = useMemo(() => {
@@ -78,7 +94,7 @@ export default function App() {
     (isMobileScreen && Boolean(initialRoomParam));
 
   const [roomId, setRoomId] = useState<string>(() => {
-    return initialRoomParam ? initialRoomParam.toUpperCase() : generateRoomId();
+    return getPersistentRoomId(initialRoomParam);
   });
 
   const [appMode, setAppMode] = useState<AppMode>(
@@ -141,9 +157,17 @@ export default function App() {
   const engineRef = useRef<NesEngine | null>(null);
   const socketRef = useRef<PartySocket | null>(null);
 
-  // Keep activeRom in a stable ref so direct input handlers can inspect current mode without recreation
+  // Keep activeRom, selectedRom, roms in stable refs so direct input handlers always have the freshest data
   const activeRomRef = useRef<RomItem | null>(null);
   activeRomRef.current = activeRom;
+
+  const romsRef = useRef<RomItem[]>(roms);
+  romsRef.current = roms;
+
+  const selectedRomRef = useRef<RomItem | null>(selectedRom);
+  selectedRomRef.current = selectedRom;
+
+  const launchRomRef = useRef<(rom: RomItem) => Promise<void>>(() => Promise.resolve());
 
   // Unified controller input handler for both real phone WebSockets and PC on-screen test controller
   const handleDirectInput = useCallback((slot: 1 | 2 | any, button: NesButton, state: boolean) => {
@@ -167,28 +191,69 @@ export default function App() {
       });
     }
 
-    // 2. Forward to active NES Engine if a game is loaded
+    // 2. Unmute & resume Web Audio on player interaction
     if (engineRef.current) {
+      engineRef.current.getAudio()?.resume();
+    }
+
+    // 3. Forward to active NES Engine if a game is loaded
+    if (activeRomRef.current && engineRef.current) {
       if (state) {
         engineRef.current.buttonDown(targetSlot, normBtn);
+        // If player 2 controller is used in single player games, also mirror to player 1
+        if (targetSlot === 2 && !p1Status.connected) {
+          engineRef.current.buttonDown(1, normBtn);
+        }
       } else {
         engineRef.current.buttonUp(targetSlot, normBtn);
+        if (targetSlot === 2 && !p1Status.connected) {
+          engineRef.current.buttonUp(1, normBtn);
+        }
       }
     }
 
-    // 3. If in menu (no active game), navigate the menu using controller buttons
+    // 4. If in menu (no active game), directly navigate and launch games
     if (!activeRomRef.current) {
-      const keyMap: Record<string, { key: string; code: string }> = {
-        UP: { key: "ArrowUp", code: "ArrowUp" },
-        DOWN: { key: "ArrowDown", code: "ArrowDown" },
-        LEFT: { key: "ArrowLeft", code: "ArrowLeft" },
-        RIGHT: { key: "ArrowRight", code: "ArrowRight" },
-        A: { key: "Enter", code: "Enter" },
-        START: { key: "Enter", code: "Enter" },
-        B: { key: "Escape", code: "Escape" },
-        SELECT: { key: "i", code: "KeyI" },
-        TURBO_A: { key: "Enter", code: "Enter" },
-        TURBO_B: { key: "Escape", code: "Escape" },
+      if (state) {
+        const list = romsRef.current;
+        const currentSel = selectedRomRef.current || list[0];
+        const curIdx = list.findIndex((r) => r.id === currentSel?.id);
+
+        if (normBtn === "DOWN" || normBtn === "RIGHT") {
+          if (list.length > 0) {
+            const nextIdx = (curIdx + 1 + list.length) % list.length;
+            setSelectedRom(list[nextIdx]);
+          }
+        } else if (normBtn === "UP" || normBtn === "LEFT") {
+          if (list.length > 0) {
+            const prevIdx = (curIdx - 1 + list.length) % list.length;
+            setSelectedRom(list[prevIdx]);
+          }
+        } else if (normBtn === "A" || normBtn === "START") {
+          if (currentSel) {
+            launchRomRef.current(currentSel);
+          }
+        } else if (normBtn === "B") {
+          setShowLayoutModal(false);
+          setShowQrModal(false);
+          setShowSettingsModal(false);
+          setShowUploadModal(false);
+          setShowDocsModal(false);
+        }
+      }
+
+      // Also dispatch standard KeyboardEvents for custom frontend wheels/overlays
+      const keyMap: Record<string, { key: string; code: string; keyCode: number }> = {
+        UP: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+        DOWN: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+        LEFT: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+        RIGHT: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+        A: { key: "Enter", code: "Enter", keyCode: 13 },
+        START: { key: "Enter", code: "Enter", keyCode: 13 },
+        B: { key: "Escape", code: "Escape", keyCode: 27 },
+        SELECT: { key: "i", code: "KeyI", keyCode: 73 },
+        TURBO_A: { key: "Enter", code: "Enter", keyCode: 13 },
+        TURBO_B: { key: "Escape", code: "Escape", keyCode: 27 },
       };
 
       const mapped = keyMap[normBtn];
@@ -197,13 +262,15 @@ export default function App() {
         const evt = new KeyboardEvent(eventType, {
           key: mapped.key,
           code: mapped.code,
+          keyCode: mapped.keyCode,
+          which: mapped.keyCode,
           bubbles: true,
           cancelable: true,
         });
         window.dispatchEvent(evt);
       }
     }
-  }, []);
+  }, [p1Status.connected]);
 
   const handleDirectInputRef = useRef(handleDirectInput);
   handleDirectInputRef.current = handleDirectInput;
@@ -421,6 +488,7 @@ export default function App() {
       setIsLoadingRom(false);
     }
   };
+  launchRomRef.current = launchRom;
 
   const handleCustomRomLoad = async (rom: RomItem, data: Uint8Array) => {
     if (!engineRef.current) return;

@@ -31,6 +31,7 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
 }) => {
   const [slot, setSlot] = useState<1 | 2 | "spectator">(initialSlot || socket?.getSlot() || 1);
   const [status, setStatus] = useState<ConnectionStatus>(socket ? socket.getStatus() : "connecting");
+  const [hostConnected, setHostConnected] = useState<boolean>(socket ? socket.isHostConnected() : true);
   const [ping, setPing] = useState<number>(socket ? socket.getPing() || 0 : 0);
   const [activeButtons, setActiveButtons] = useState<Set<NesButton>>(new Set());
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -103,17 +104,20 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
     if (!socket) return;
     setStatus(socket.getStatus());
     setPing(socket.getPing());
+    setHostConnected(socket.isHostConnected());
     const currentSlot = socket.getSlot();
     if (currentSlot) setSlot(currentSlot);
 
     const unsubStatus = socket.onStatusChange((s) => setStatus(s));
     const unsubPing = socket.onPing((p) => setPing(p));
     const unsubAssigned = socket.onAssigned((newSlot) => setSlot(newSlot));
+    const unsubHost = socket.onHostStatus((data) => setHostConnected(data.hostConnected));
 
     return () => {
       unsubStatus();
       unsubPing();
       unsubAssigned();
+      unsubHost();
     };
   }, [socket]);
 
@@ -605,15 +609,46 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
             <span>{isP1 ? "PLAYER 1" : slot === 2 ? "PLAYER 2" : "SPECTATOR"}</span>
           </div>
 
+          {/* TV Link Status Badge */}
+          {!hostConnected ? (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-mono font-bold tracking-wider bg-amber-500/20 border border-amber-500/60 text-amber-300 animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <span>WAITING FOR TV</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-mono font-bold tracking-wider bg-emerald-500/15 border border-emerald-500/40 text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>TV LINKED</span>
+            </div>
+          )}
+
           {/* Room info */}
-          <div className="flex items-center gap-1 text-xs font-mono text-zinc-400">
-            <span className="hidden sm:inline">ROOM:</span>
+          <div className="hidden md:flex items-center gap-1 text-xs font-mono text-zinc-400">
+            <span>ROOM:</span>
             <span className="text-amber-400 font-bold tracking-wider">{roomId}</span>
           </div>
         </div>
 
         {/* Right HUD Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Quick Menu Button (Select + Start) */}
+          <button
+            onClick={() => {
+              sendButtonEvent("SELECT", true);
+              sendButtonEvent("START", true);
+              triggerHaptic();
+              playClickFeedback();
+              setTimeout(() => {
+                sendButtonEvent("SELECT", false);
+                sendButtonEvent("START", false);
+              }, 200);
+            }}
+            className="flex items-center gap-1 px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 hover:text-white text-xs font-mono font-bold tracking-wider transition-colors cursor-pointer"
+            title="Menu (Select + Start)"
+          >
+            <span>MENU</span>
+          </button>
+
           {/* Latency badge */}
           <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg">
             {isConnected ? (

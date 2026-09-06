@@ -452,8 +452,26 @@ wss.on("connection", (ws: WebSocket, req) => {
             room.hostWs = ws;
           }
 
+          // Adopt any controllers that may have connected to a temporary room
+          for (const [otherRoomId, otherRoom] of rooms.entries()) {
+            if (otherRoomId !== roomId && (!otherRoom.hostWs || otherRoom.hostWs.readyState !== WebSocket.OPEN)) {
+              if (otherRoom.p1Ws && otherRoom.p1Ws.readyState === WebSocket.OPEN && !room.p1Ws) {
+                room.p1Ws = otherRoom.p1Ws;
+                room.p1Name = otherRoom.p1Name;
+                otherRoom.p1Ws = null;
+              }
+              if (otherRoom.p2Ws && otherRoom.p2Ws.readyState === WebSocket.OPEN && !room.p2Ws) {
+                room.p2Ws = otherRoom.p2Ws;
+                room.p2Name = otherRoom.p2Name;
+                otherRoom.p2Ws = null;
+              }
+            }
+          }
+
           const isP1Live = !!room.p1Ws && room.p1Ws.readyState === WebSocket.OPEN;
           const isP2Live = !!room.p2Ws && room.p2Ws.readyState === WebSocket.OPEN;
+
+          console.log(`[NES Host] Registered host for room ${roomId} (P1: ${isP1Live}, P2: ${isP2Live})`);
 
           ws.send(
             JSON.stringify({
@@ -465,28 +483,50 @@ wss.on("connection", (ws: WebSocket, req) => {
               p2Name: isP2Live ? room.p2Name : undefined,
             })
           );
+
+          // Broadcast to connected controllers that TV host is live and ready
+          const hostStatusMsg = JSON.stringify({
+            type: "host-status",
+            hostConnected: true,
+            roomId,
+          });
+          if (isP1Live) room.p1Ws!.send(hostStatusMsg);
+          if (isP2Live) room.p2Ws!.send(hostStatusMsg);
           break;
         }
 
         case "join-controller": {
-          const roomId = (data.roomId || "").toUpperCase();
+          let roomId = (data.roomId || "").toUpperCase();
           const deviceName = data.deviceName || "Player";
-          boundRoomId = roomId;
 
-          let room = rooms.get(roomId);
+          let room = roomId ? rooms.get(roomId) : null;
+          // Fallback: If requested room has no active host, find any room with an active host
+          if (!room || !room.hostWs || room.hostWs.readyState !== WebSocket.OPEN) {
+            for (const [rId, r] of rooms.entries()) {
+              if (r.hostWs && r.hostWs.readyState === WebSocket.OPEN) {
+                room = r;
+                roomId = rId;
+                break;
+              }
+            }
+          }
+
           if (!room) {
-            // Auto-provision room so phone connects cleanly even if host takes a moment
             room = {
               hostWs: null,
               p1Ws: null,
               p2Ws: null,
               createdAt: Date.now(),
             };
-            rooms.set(roomId, room);
+            rooms.set(roomId || "NES-PARTY", room);
+            roomId = roomId || "NES-PARTY";
           }
 
-          const isP1Active = !!room.p1Ws && room.p1Ws.readyState === WebSocket.OPEN;
-          const isP2Active = !!room.p2Ws && room.p2Ws.readyState === WebSocket.OPEN;
+          boundRoomId = roomId;
+
+          const isP1Active = !!room.p1Ws && room.p1Ws.readyState === WebSocket.OPEN && room.p1Ws !== ws;
+          const isP2Active = !!room.p2Ws && room.p2Ws.readyState === WebSocket.OPEN && room.p2Ws !== ws;
+          const hasHost = !!room.hostWs && room.hostWs.readyState === WebSocket.OPEN;
 
           let assignedSlot: 1 | 2 = 1;
 
@@ -496,17 +536,11 @@ wss.on("connection", (ws: WebSocket, req) => {
               room.p2Name = deviceName;
               assignedSlot = 2;
               boundRole = "p2";
-            } else if (!isP1Active) {
+            } else {
               room.p1Ws = ws;
               room.p1Name = deviceName;
               assignedSlot = 1;
               boundRole = "p1";
-            } else {
-              // Take over P2 slot
-              room.p2Ws = ws;
-              room.p2Name = deviceName;
-              assignedSlot = 2;
-              boundRole = "p2";
             }
           } else {
             // Default to Player 1 if free
@@ -521,7 +555,7 @@ wss.on("connection", (ws: WebSocket, req) => {
               assignedSlot = 2;
               boundRole = "p2";
             } else {
-              // Both were marked active; replace P1 for current active controller
+              // Re-bind Player 1 to this active socket
               room.p1Ws = ws;
               room.p1Name = deviceName;
               assignedSlot = 1;
@@ -529,18 +563,21 @@ wss.on("connection", (ws: WebSocket, req) => {
             }
           }
 
-          // Acknowledge controller with slot assignment
+          console.log(`[NES Controller] ${deviceName} joined room ${roomId} as Player ${assignedSlot} (TV host connected: ${hasHost})`);
+
+          // Acknowledge controller with slot assignment & host status
           ws.send(
             JSON.stringify({
               type: "assigned",
               roomId,
               slot: assignedSlot,
               deviceName,
+              hostConnected: hasHost,
             })
           );
 
           // Inform TV Host
-          if (room.hostWs && room.hostWs.readyState === WebSocket.OPEN) {
+          if (hasHost && room.hostWs) {
             room.hostWs.send(
               JSON.stringify({
                 type: "player-joined",
@@ -558,10 +595,21 @@ wss.on("connection", (ws: WebSocket, req) => {
 
         case "input": {
           // Fast-path controller input dispatch to Host
-          const activeRoomId = boundRoomId || (data.roomId ? String(data.roomId).toUpperCase() : null);
-          if (!activeRoomId) return;
+          let activeRoomId = boundRoomId || (data.roomId ? String(data.roomId).toUpperCase() : null);
+          let room = activeRoomId ? rooms.get(activeRoomId) : null;
 
-          const room = rooms.get(activeRoomId);
+          // Resilient Host Resolution: If room has no active host, find ANY active host on this server
+          if (!room || !room.hostWs || room.hostWs.readyState !== WebSocket.OPEN) {
+            for (const [rId, r] of rooms.entries()) {
+              if (r.hostWs && r.hostWs.readyState === WebSocket.OPEN) {
+                room = r;
+                activeRoomId = rId;
+                boundRoomId = rId;
+                break;
+              }
+            }
+          }
+
           if (room && room.hostWs && room.hostWs.readyState === WebSocket.OPEN) {
             // Forward input payload with slot resolution
             const slot = boundRole === "p1" ? 1 : boundRole === "p2" ? 2 : (data.slot === 2 ? 2 : 1);
@@ -572,6 +620,15 @@ wss.on("connection", (ws: WebSocket, req) => {
                 button: data.button, // "A", "B", "UP", "DOWN", "LEFT", "RIGHT", "START", "SELECT", "TURBO_A", "TURBO_B"
                 state: !!data.state, // true = pressed, false = released
                 timestamp: data.timestamp || Date.now(),
+              })
+            );
+          } else {
+            // Notify controller that TV host is not currently connected
+            ws.send(
+              JSON.stringify({
+                type: "host-status",
+                hostConnected: false,
+                roomId: activeRoomId || "NONE",
               })
             );
           }
@@ -616,34 +673,38 @@ wss.on("connection", (ws: WebSocket, req) => {
     if (boundRoomId) {
       const room = rooms.get(boundRoomId);
       if (room) {
-        if (boundRole === "host") {
+        // Only clear if this exact socket is the one registered
+        if (boundRole === "host" && room.hostWs === ws) {
           room.hostWs = null;
-          // Notify controllers host left
-          const msg = JSON.stringify({ type: "host-disconnected" });
+          console.log(`[NES Host] Host disconnected from room ${boundRoomId}`);
+          // Notify controllers host disconnected
+          const msg = JSON.stringify({ type: "host-status", hostConnected: false });
           if (room.p1Ws?.readyState === WebSocket.OPEN) room.p1Ws.send(msg);
           if (room.p2Ws?.readyState === WebSocket.OPEN) room.p2Ws.send(msg);
-        } else if (boundRole === "p1") {
+        } else if (boundRole === "p1" && room.p1Ws === ws) {
           room.p1Ws = null;
           room.p1Name = undefined;
+          console.log(`[NES Controller] P1 disconnected from room ${boundRoomId}`);
           if (room.hostWs?.readyState === WebSocket.OPEN) {
             room.hostWs.send(
               JSON.stringify({
                 type: "player-left",
                 slot: 1,
                 p1Connected: false,
-                p2Connected: !!room.p2Ws,
+                p2Connected: !!room.p2Ws && room.p2Ws.readyState === WebSocket.OPEN,
               })
             );
           }
-        } else if (boundRole === "p2") {
+        } else if (boundRole === "p2" && room.p2Ws === ws) {
           room.p2Ws = null;
           room.p2Name = undefined;
+          console.log(`[NES Controller] P2 disconnected from room ${boundRoomId}`);
           if (room.hostWs?.readyState === WebSocket.OPEN) {
             room.hostWs.send(
               JSON.stringify({
                 type: "player-left",
                 slot: 2,
-                p1Connected: !!room.p1Ws,
+                p1Connected: !!room.p1Ws && room.p1Ws.readyState === WebSocket.OPEN,
                 p2Connected: false,
               })
             );
