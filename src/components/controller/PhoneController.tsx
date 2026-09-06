@@ -716,59 +716,69 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
       {/* Main Controller Area: Adaptive Layout */}
       {isPortrait && !forceLandscape ? (
         /* PORTRAIT HANDHELD VIEW FOR SMARTPHONES */
-        <main className="flex-1 flex flex-col justify-between p-3 max-w-md mx-auto w-full h-full overflow-hidden select-none">
-          {/* Orientation Rotate Tip */}
-          <div className="flex items-center justify-between px-3 py-1.5 bg-zinc-900/90 rounded-xl border border-zinc-800 text-[11px] text-zinc-300">
-            <span className="flex items-center gap-1.5">
-              <Smartphone className="w-3.5 h-3.5 text-red-500 rotate-90" />
-              <span>Rotate phone for widescreen NES gamepad</span>
-            </span>
-            <button
-              onClick={() => setForceLandscape(true)}
-              className="text-red-400 font-bold hover:underline cursor-pointer"
-            >
-              Widescreen
-            </button>
+        <main className="flex-1 flex flex-col justify-end p-3 max-w-md mx-auto w-full h-full overflow-hidden select-none">
+          {/* Upper Controller Section */}
+          <div className="flex-1 flex flex-col justify-start min-h-0">
+            <div className="bg-[#caccd1] rounded-2xl p-3 border-4 border-[#9a9ea7] shadow-xl relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute inset-x-2 top-2 bottom-2 bg-[#1b1c20] rounded-xl border-2 border-[#121316] pointer-events-none" />
+
+              <div className="relative z-10 flex justify-between items-center px-2">
+                <div className="font-display font-black text-lg text-[#e52521] uppercase italic tracking-tight">
+                  Nintendo
+                </div>
+                <span className="px-2 py-0.5 rounded bg-zinc-800 text-white font-mono font-black text-[10px]">
+                  {isP1 ? "CONTROLLER I" : "CONTROLLER II"}
+                </span>
+              </div>
+
+              <div className="relative z-20 flex items-center justify-around mt-3 pt-2">
+                {renderSelectStart()}
+                {renderTurboButtons()}
+              </div>
+            </div>
+
+            <div className="flex-1 flex items-center justify-between gap-3 px-1 py-2 min-h-0">
+              <div className="flex items-center justify-center flex-1">
+                {renderDpad("w-36 h-36 sm:w-40 sm:h-40")}
+              </div>
+
+              <div className="flex items-center justify-center flex-1">
+                {renderActionButtons("w-15 h-15 sm:w-16 sm:h-16", "text-xl sm:text-2xl")}
+              </div>
+            </div>
           </div>
 
-          {/* Upper Console Header Band */}
-          <div className="bg-[#caccd1] rounded-2xl p-3 sm:p-4 border-4 border-[#9a9ea7] shadow-xl relative overflow-hidden flex flex-col justify-between my-2">
-            <div className="absolute inset-x-2 top-2 bottom-2 bg-[#1b1c20] rounded-xl border-2 border-[#121316] pointer-events-none" />
-
-            <div className="relative z-10 flex justify-between items-center px-2">
-              <div className="font-display font-black text-lg text-[#e52521] uppercase italic tracking-tight">
-                Nintendo
+          {/* Bottom Status / Info Panel */}
+          <div className="mt-2 rounded-2xl border border-zinc-800 bg-zinc-950/90 p-2.5 text-[10px] text-zinc-300">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <div className="flex items-center gap-1.5 font-mono font-bold uppercase text-zinc-400">
+                <Wifi className="w-3 h-3 text-emerald-400" />
+                <span>{isConnected ? `${ping}ms` : "CONNECTING"}</span>
               </div>
-              <span className="px-2 py-0.5 rounded bg-zinc-800 text-white font-mono font-black text-[10px]">
-                {isP1 ? "CONTROLLER I" : "CONTROLLER II"}
+              <div className="font-mono font-bold text-red-400">
+                {activeButtons.size > 0 ? `KEYS: ${Array.from(activeButtons).join(" ")}` : "READY"}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 text-[10px] text-zinc-500">
+              <span className="font-mono font-bold uppercase">ROOM {roomId}</span>
+              <span className="font-mono font-bold uppercase text-emerald-400">
+                {hostConnected ? "TV LINKED" : "WAITING"}
               </span>
             </div>
 
-            <div className="relative z-20 flex items-center justify-around mt-3 pt-2">
-              {renderSelectStart()}
-              {renderTurboButtons()}
+            <div className="mt-2 flex items-center justify-between gap-2 px-2 py-1 bg-zinc-900/80 rounded-lg border border-zinc-800">
+              <span className="flex items-center gap-1.5">
+                <Smartphone className="w-3.5 h-3.5 text-red-500 rotate-90" />
+                <span>Rotate for widescreen</span>
+              </span>
+              <button
+                onClick={() => setForceLandscape(true)}
+                className="text-red-400 font-bold hover:underline cursor-pointer"
+              >
+                Widescreen
+              </button>
             </div>
-          </div>
-
-          {/* Lower Thumb Area: D-Pad on Left, Buttons on Right */}
-          <div className="flex-1 flex items-center justify-between gap-3 px-1 py-2">
-            {/* Left Thumb D-Pad */}
-            <div className="flex items-center justify-center flex-1">
-              {renderDpad("w-36 h-36 sm:w-44 sm:h-44")}
-            </div>
-
-            {/* Right Thumb Action Buttons */}
-            <div className="flex items-center justify-center flex-1">
-              {renderActionButtons("w-15 h-15 sm:w-18 sm:h-18", "text-xl sm:text-2xl")}
-            </div>
-          </div>
-
-          {/* Bottom Footnote Bar */}
-          <div className="flex justify-between items-center text-[10px] text-zinc-500 px-2 py-1">
-            <span className="font-mono font-bold uppercase">WIRELESS MULTIPLAYER</span>
-            <span className="font-mono font-bold text-red-400">
-              {activeButtons.size > 0 ? `KEYS: ${Array.from(activeButtons).join(" ")}` : "READY"}
-            </span>
           </div>
         </main>
       ) : (
