@@ -103,6 +103,15 @@ export default function App() {
 
   const [liveSocket, setLiveSocket] = useState<PartySocket | null>(null);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const currentOrigin = window.location.origin;
+    const currentWsUrl = currentOrigin.replace(/^http/i, "ws");
+    try {
+      localStorage.setItem("nes_party_ws_url", currentWsUrl);
+    } catch (e) {}
+  }, []);
+
   // Selected layout option (Flagship: ArcadeFrontend HyperSpin wheel)
   const [currentLayout, setCurrentLayout] = useState<MenuLayoutOption>("arcade-frontend");
 

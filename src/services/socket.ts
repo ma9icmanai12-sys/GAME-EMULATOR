@@ -62,10 +62,34 @@ export class PartySocket {
   private getSocketUrl(): string {
     if (this.customWsUrl) return this.customWsUrl;
     if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const override =
+        params.get("ws") ||
+        params.get("socket") ||
+        params.get("wsUrl") ||
+        localStorage.getItem("nes_party_ws_url");
+
+      if (override) {
+        const normalized = this.normalizeWsUrl(override);
+        if (normalized) return normalized;
+      }
+
       const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
       return `${proto}//${window.location.host}`;
     }
     return "ws://localhost:3000";
+  }
+
+  private normalizeWsUrl(rawUrl: string): string {
+    const value = rawUrl.trim();
+    if (!value) return "";
+
+    if (/^wss?:\/\//i.test(value)) return value;
+    if (/^https?:\/\//i.test(value)) return value.replace(/^http/i, "ws");
+    if (value.includes("://")) return value;
+
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${value.replace(/^\/+/, "")}`;
   }
 
   private connect() {
