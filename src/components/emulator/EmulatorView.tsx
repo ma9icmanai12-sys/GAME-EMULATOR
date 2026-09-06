@@ -42,13 +42,26 @@ export const EmulatorView: React.FC<EmulatorViewProps> = ({
 
   return (
     <div className="relative w-full h-full bg-black flex flex-col items-center justify-center select-none overflow-hidden">
-      {/* 256x240 Native NES Canvas scaled with crisp nearest-neighbor */}
-      <canvas
-        ref={canvasRef}
-        width={NES_WIDTH}
-        height={NES_HEIGHT}
-        className="pixelated-canvas w-full h-full max-w-[95%] max-h-[95%] object-contain"
-      />
+      <div className="absolute inset-0 flex items-center justify-center bg-black">
+        <div
+          className="relative flex items-center justify-center"
+          style={{
+            width: "min(96vw, calc(96vh * 256 / 240))",
+            height: "min(92vh, calc(96vw * 240 / 256))",
+            maxWidth: "100%",
+            maxHeight: "100%",
+            aspectRatio: `${NES_WIDTH} / ${NES_HEIGHT}`,
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            width={NES_WIDTH}
+            height={NES_HEIGHT}
+            className="block w-full h-full bg-black"
+            style={{ imageRendering: "pixelated", objectFit: "contain" }}
+          />
+        </div>
+      </div>
 
       {/* Top Floating Mini HUD - stays visible enough to show the active game and controller state */}
       <div className="absolute top-2 inset-x-4 flex items-center justify-between pointer-events-none z-20 text-xs opacity-100 transition-opacity duration-300">
