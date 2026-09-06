@@ -1,0 +1,6 @@
+{
+  "name": "NES TV Party",
+  "description": "Retro NES multiplayer TV party emulator with CRT shaders, dynamic Google Drive ROM browser, multiple menu layouts, and real-time smartphone virtual controllers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
