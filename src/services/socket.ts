@@ -166,6 +166,7 @@ export class PartySocket {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
     this.send({
       type: "input",
+      roomId: this.roomId,
       button,
       state,
       slot: this.slot === "spectator" ? 1 : this.slot,

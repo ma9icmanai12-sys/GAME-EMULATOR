@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NesEngine } from "./services/emulator";
 import { PartySocket } from "./services/socket";
 import {
@@ -125,6 +125,73 @@ export default function App() {
   const engineRef = useRef<NesEngine | null>(null);
   const socketRef = useRef<PartySocket | null>(null);
 
+  // Keep activeRom in a stable ref so direct input handlers can inspect current mode without recreation
+  const activeRomRef = useRef<RomItem | null>(null);
+  activeRomRef.current = activeRom;
+
+  // Unified controller input handler for both real phone WebSockets and PC on-screen test controller
+  const handleDirectInput = useCallback((slot: 1 | 2 | any, button: NesButton, state: boolean) => {
+    const targetSlot = (slot === 2 || slot === "2") ? 2 : 1;
+    const normBtn = (button ? String(button).toUpperCase() : "") as NesButton;
+
+    // 1. Update UI active buttons indicator
+    if (targetSlot === 1) {
+      setP1Status((prev) => {
+        const btns = new Set(prev.activeButtons);
+        if (state) btns.add(normBtn);
+        else btns.delete(normBtn);
+        return { ...prev, connected: true, activeButtons: btns, lastActive: Date.now() };
+      });
+    } else {
+      setP2Status((prev) => {
+        const btns = new Set(prev.activeButtons);
+        if (state) btns.add(normBtn);
+        else btns.delete(normBtn);
+        return { ...prev, connected: true, activeButtons: btns, lastActive: Date.now() };
+      });
+    }
+
+    // 2. Forward to active NES Engine if a game is loaded
+    if (engineRef.current) {
+      if (state) {
+        engineRef.current.buttonDown(targetSlot, normBtn);
+      } else {
+        engineRef.current.buttonUp(targetSlot, normBtn);
+      }
+    }
+
+    // 3. If in menu (no active game), navigate the menu using controller buttons
+    if (!activeRomRef.current) {
+      const keyMap: Record<string, { key: string; code: string }> = {
+        UP: { key: "ArrowUp", code: "ArrowUp" },
+        DOWN: { key: "ArrowDown", code: "ArrowDown" },
+        LEFT: { key: "ArrowLeft", code: "ArrowLeft" },
+        RIGHT: { key: "ArrowRight", code: "ArrowRight" },
+        A: { key: "Enter", code: "Enter" },
+        START: { key: "Enter", code: "Enter" },
+        B: { key: "Escape", code: "Escape" },
+        SELECT: { key: "i", code: "KeyI" },
+        TURBO_A: { key: "Enter", code: "Enter" },
+        TURBO_B: { key: "Escape", code: "Escape" },
+      };
+
+      const mapped = keyMap[normBtn];
+      if (mapped) {
+        const eventType = state ? "keydown" : "keyup";
+        const evt = new KeyboardEvent(eventType, {
+          key: mapped.key,
+          code: mapped.code,
+          bubbles: true,
+          cancelable: true,
+        });
+        window.dispatchEvent(evt);
+      }
+    }
+  }, []);
+
+  const handleDirectInputRef = useRef(handleDirectInput);
+  handleDirectInputRef.current = handleDirectInput;
+
   // Initialize Engine & Socket
   useEffect(() => {
     const engine = new NesEngine({
@@ -162,29 +229,9 @@ export default function App() {
     });
 
     socket.onInput((msg) => {
-      // Update UI active buttons indicator
-      if (msg.slot === 1) {
-        setP1Status((prev) => {
-          const btns = new Set(prev.activeButtons);
-          if (msg.state) btns.add(msg.button);
-          else btns.delete(msg.button);
-          return { ...prev, activeButtons: btns, lastActive: Date.now() };
-        });
-      } else if (msg.slot === 2) {
-        setP2Status((prev) => {
-          const btns = new Set(prev.activeButtons);
-          if (msg.state) btns.add(msg.button);
-          else btns.delete(msg.button);
-          return { ...prev, activeButtons: btns, lastActive: Date.now() };
-        });
-      }
-
-      // Forward to NES Engine
-      if (msg.state) {
-        engine.buttonDown(msg.slot, msg.button);
-      } else {
-        engine.buttonUp(msg.slot, msg.button);
-      }
+      const slot = (msg.slot === 2 || (msg as any).slot === "2") ? 2 : 1;
+      const btn = (msg.button || "").toUpperCase() as NesButton;
+      handleDirectInputRef.current(slot, btn, !!msg.state);
     });
 
     return () => {
@@ -427,6 +474,7 @@ export default function App() {
                   socket={socketRef.current}
                   roomId={roomId}
                   initialSlot={1}
+                  onDirectInput={handleDirectInput}
                 />
               )}
             </div>
@@ -477,7 +525,7 @@ export default function App() {
           }}
           onJoinCustomRoom={(targetCode) => {
             setRoomId(targetCode);
-            setAppMode("controller");
+            setAppMode("split-test");
             setShowQrModal(false);
           }}
         />

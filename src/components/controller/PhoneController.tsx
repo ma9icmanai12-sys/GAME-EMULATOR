@@ -16,10 +16,11 @@ import {
 } from "lucide-react";
 
 interface PhoneControllerProps {
-  socket: PartySocket;
+  socket?: PartySocket;
   roomId: string;
   initialSlot?: 1 | 2;
   onExit?: () => void;
+  onDirectInput?: (slot: 1 | 2, button: NesButton, state: boolean) => void;
 }
 
 export const PhoneController: React.FC<PhoneControllerProps> = ({
@@ -27,16 +28,28 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
   roomId,
   initialSlot,
   onExit,
+  onDirectInput,
 }) => {
-  const [slot, setSlot] = useState<1 | 2 | "spectator">(initialSlot || socket.getSlot() || 1);
-  const [status, setStatus] = useState(socket.getStatus());
-  const [ping, setPing] = useState(socket.getPing() || 0);
+  const [slot, setSlot] = useState<1 | 2 | "spectator">(initialSlot || socket?.getSlot() || 1);
+  const [status, setStatus] = useState(socket ? socket.getStatus() : "connected");
+  const [ping, setPing] = useState(socket ? (socket.getPing() || 0) : 0);
   const [activeButtons, setActiveButtons] = useState<Set<NesButton>>(new Set());
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isTurboAHeld, setIsTurboAHeld] = useState(false);
   const [isTurboBHeld, setIsTurboBHeld] = useState(false);
+
+  // Send button event both to WebSocket (for remote phones) and directly (for local testing)
+  const sendButtonEvent = useCallback((btn: NesButton, state: boolean) => {
+    if (socket) {
+      socket.sendInput(btn, state);
+    }
+    if (onDirectInput) {
+      const activeSlot = (slot === "spectator" ? 1 : slot) as 1 | 2;
+      onDirectInput(activeSlot, btn, state);
+    }
+  }, [socket, onDirectInput, slot]);
 
   // Audio click context
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -69,6 +82,7 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
 
   // Socket listener bindings
   useEffect(() => {
+    if (!socket) return;
     const unsubStatus = socket.onStatusChange((s) => setStatus(s));
     const unsubPing = socket.onPing((p) => setPing(p));
     const unsubAssigned = socket.onAssigned((newSlot) => setSlot(newSlot));
@@ -88,10 +102,10 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
         const pulse = turboPulseRef.current;
 
         if (isTurboAHeld) {
-          socket.sendInput("A", pulse);
+          sendButtonEvent("A", pulse);
         }
         if (isTurboBHeld) {
-          socket.sendInput("B", pulse);
+          sendButtonEvent("B", pulse);
         }
       }, 50); // 20 times a second turbo
     } else {
@@ -99,8 +113,8 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
         clearInterval(turboIntervalRef.current);
         turboIntervalRef.current = null;
       }
-      if (!activeButtons.has("A")) socket.sendInput("A", false);
-      if (!activeButtons.has("B")) socket.sendInput("B", false);
+      if (!activeButtons.has("A")) sendButtonEvent("A", false);
+      if (!activeButtons.has("B")) sendButtonEvent("B", false);
     }
 
     return () => {
@@ -108,7 +122,7 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
         clearInterval(turboIntervalRef.current);
       }
     };
-  }, [isTurboAHeld, isTurboBHeld, socket, activeButtons]);
+  }, [isTurboAHeld, isTurboBHeld, sendButtonEvent, activeButtons]);
 
   // Audio click feedback generator
   const playClickFeedback = useCallback(() => {
@@ -148,7 +162,7 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
   // Send single button down
   const pressButton = (btn: NesButton) => {
     setActiveButtons((prev) => new Set(prev).add(btn));
-    socket.sendInput(btn, true);
+    sendButtonEvent(btn, true);
     triggerHaptic();
     playClickFeedback();
   };
@@ -160,7 +174,7 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
       next.delete(btn);
       return next;
     });
-    socket.sendInput(btn, false);
+    sendButtonEvent(btn, false);
   };
 
   // Continuous D-Pad Touch/Drag Handling
@@ -215,11 +229,11 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
       const isNowActive = newDirs.has(btn);
 
       if (!wasActive && isNowActive) {
-        socket.sendInput(btn, true);
+        sendButtonEvent(btn, true);
         triggerHaptic();
         playClickFeedback();
       } else if (wasActive && !isNowActive) {
-        socket.sendInput(btn, false);
+        sendButtonEvent(btn, false);
       }
     }
 
@@ -241,7 +255,7 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
     const allDpadBtns: NesButton[] = ["UP", "DOWN", "LEFT", "RIGHT"];
     for (const btn of allDpadBtns) {
       if (activeDpadDirRef.current.has(btn)) {
-        socket.sendInput(btn, false);
+        sendButtonEvent(btn, false);
       }
     }
     activeDpadDirRef.current.clear();

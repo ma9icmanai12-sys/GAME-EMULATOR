@@ -433,6 +433,7 @@ wss.on("connection", (ws: WebSocket, req) => {
       const data = JSON.parse(raw.toString());
 
       switch (data.type) {
+        case "register-host":
         case "host-register": {
           const roomId = (data.roomId || "NES").toUpperCase();
           boundRoomId = roomId;
@@ -451,14 +452,17 @@ wss.on("connection", (ws: WebSocket, req) => {
             room.hostWs = ws;
           }
 
+          const isP1Live = !!room.p1Ws && room.p1Ws.readyState === WebSocket.OPEN;
+          const isP2Live = !!room.p2Ws && room.p2Ws.readyState === WebSocket.OPEN;
+
           ws.send(
             JSON.stringify({
               type: "host-registered",
               roomId,
-              p1Connected: !!room.p1Ws,
-              p2Connected: !!room.p2Ws,
-              p1Name: room.p1Name,
-              p2Name: room.p2Name,
+              p1Connected: isP1Live,
+              p2Connected: isP2Live,
+              p1Name: isP1Live ? room.p1Name : undefined,
+              p2Name: isP2Live ? room.p2Name : undefined,
             })
           );
           break;
@@ -469,45 +473,63 @@ wss.on("connection", (ws: WebSocket, req) => {
           const deviceName = data.deviceName || "Player";
           boundRoomId = roomId;
 
-          const room = rooms.get(roomId);
+          let room = rooms.get(roomId);
           if (!room) {
-            ws.send(
-              JSON.stringify({
-                type: "error",
-                message: `Room "${roomId}" not found. Ensure the TV host is active!`,
-              })
-            );
-            return;
+            // Auto-provision room so phone connects cleanly even if host takes a moment
+            room = {
+              hostWs: null,
+              p1Ws: null,
+              p2Ws: null,
+              createdAt: Date.now(),
+            };
+            rooms.set(roomId, room);
           }
 
-          let assignedSlot: 1 | 2 | "spectator" = "spectator";
+          const isP1Active = !!room.p1Ws && room.p1Ws.readyState === WebSocket.OPEN;
+          const isP2Active = !!room.p2Ws && room.p2Ws.readyState === WebSocket.OPEN;
 
-          if (data.requestedSlot === 1 && !room.p1Ws) {
-            room.p1Ws = ws;
-            room.p1Name = deviceName;
-            assignedSlot = 1;
-            boundRole = "p1";
-          } else if (data.requestedSlot === 2 && !room.p2Ws) {
-            room.p2Ws = ws;
-            room.p2Name = deviceName;
-            assignedSlot = 2;
-            boundRole = "p2";
-          } else if (!room.p1Ws) {
-            room.p1Ws = ws;
-            room.p1Name = deviceName;
-            assignedSlot = 1;
-            boundRole = "p1";
-          } else if (!room.p2Ws) {
-            room.p2Ws = ws;
-            room.p2Name = deviceName;
-            assignedSlot = 2;
-            boundRole = "p2";
+          let assignedSlot: 1 | 2 = 1;
+
+          if (data.requestedSlot === 2) {
+            if (!isP2Active) {
+              room.p2Ws = ws;
+              room.p2Name = deviceName;
+              assignedSlot = 2;
+              boundRole = "p2";
+            } else if (!isP1Active) {
+              room.p1Ws = ws;
+              room.p1Name = deviceName;
+              assignedSlot = 1;
+              boundRole = "p1";
+            } else {
+              // Take over P2 slot
+              room.p2Ws = ws;
+              room.p2Name = deviceName;
+              assignedSlot = 2;
+              boundRole = "p2";
+            }
           } else {
-            boundRole = "spectator";
-            assignedSlot = "spectator";
+            // Default to Player 1 if free
+            if (!isP1Active) {
+              room.p1Ws = ws;
+              room.p1Name = deviceName;
+              assignedSlot = 1;
+              boundRole = "p1";
+            } else if (!isP2Active) {
+              room.p2Ws = ws;
+              room.p2Name = deviceName;
+              assignedSlot = 2;
+              boundRole = "p2";
+            } else {
+              // Both were marked active; replace P1 for current active controller
+              room.p1Ws = ws;
+              room.p1Name = deviceName;
+              assignedSlot = 1;
+              boundRole = "p1";
+            }
           }
 
-          // Acknowledge controller
+          // Acknowledge controller with slot assignment
           ws.send(
             JSON.stringify({
               type: "assigned",
@@ -524,8 +546,8 @@ wss.on("connection", (ws: WebSocket, req) => {
                 type: "player-joined",
                 slot: assignedSlot,
                 deviceName,
-                p1Connected: !!room.p1Ws,
-                p2Connected: !!room.p2Ws,
+                p1Connected: !!room.p1Ws && room.p1Ws.readyState === WebSocket.OPEN,
+                p2Connected: !!room.p2Ws && room.p2Ws.readyState === WebSocket.OPEN,
                 p1Name: room.p1Name,
                 p2Name: room.p2Name,
               })
@@ -536,22 +558,22 @@ wss.on("connection", (ws: WebSocket, req) => {
 
         case "input": {
           // Fast-path controller input dispatch to Host
-          if (!boundRoomId) return;
-          const room = rooms.get(boundRoomId);
+          const activeRoomId = boundRoomId || (data.roomId ? String(data.roomId).toUpperCase() : null);
+          if (!activeRoomId) return;
+
+          const room = rooms.get(activeRoomId);
           if (room && room.hostWs && room.hostWs.readyState === WebSocket.OPEN) {
-            // Forward input payload with origin verification
-            const slot = boundRole === "p1" ? 1 : boundRole === "p2" ? 2 : data.slot;
-            if (slot === 1 || slot === 2) {
-              room.hostWs.send(
-                JSON.stringify({
-                  type: "controller-input",
-                  slot,
-                  button: data.button, // "A", "B", "UP", "DOWN", "LEFT", "RIGHT", "START", "SELECT", "TURBO_A", "TURBO_B"
-                  state: !!data.state, // true = pressed, false = released
-                  timestamp: data.timestamp || Date.now(),
-                })
-              );
-            }
+            // Forward input payload with slot resolution
+            const slot = boundRole === "p1" ? 1 : boundRole === "p2" ? 2 : (data.slot === 2 ? 2 : 1);
+            room.hostWs.send(
+              JSON.stringify({
+                type: "controller-input",
+                slot,
+                button: data.button, // "A", "B", "UP", "DOWN", "LEFT", "RIGHT", "START", "SELECT", "TURBO_A", "TURBO_B"
+                state: !!data.state, // true = pressed, false = released
+                timestamp: data.timestamp || Date.now(),
+              })
+            );
           }
           break;
         }

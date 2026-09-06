@@ -170,22 +170,26 @@ export class NesEngine {
     }
   }
 
-  public buttonDown(slot: 1 | 2, button: NesButton) {
+  public buttonDown(slot: 1 | 2 | any, button: NesButton) {
     if (!this.nes || !this.nes.controllers) return;
-    const btnCode = BUTTON_MAP[button];
+    const targetSlot = slot === 2 || slot === "2" ? 2 : 1;
+    const normBtn = (button ? String(button).toUpperCase() : "") as NesButton;
+    const btnCode = BUTTON_MAP[normBtn];
     if (btnCode !== undefined) {
-      const controller = this.nes.controllers[slot];
+      const controller = this.nes.controllers[targetSlot];
       if (controller) {
         controller.buttonDown(btnCode);
       }
     }
   }
 
-  public buttonUp(slot: 1 | 2, button: NesButton) {
+  public buttonUp(slot: 1 | 2 | any, button: NesButton) {
     if (!this.nes || !this.nes.controllers) return;
-    const btnCode = BUTTON_MAP[button];
+    const targetSlot = slot === 2 || slot === "2" ? 2 : 1;
+    const normBtn = (button ? String(button).toUpperCase() : "") as NesButton;
+    const btnCode = BUTTON_MAP[normBtn];
     if (btnCode !== undefined) {
-      const controller = this.nes.controllers[slot];
+      const controller = this.nes.controllers[targetSlot];
       if (controller) {
         controller.buttonUp(btnCode);
       }
