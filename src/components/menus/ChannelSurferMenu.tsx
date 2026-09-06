@@ -69,9 +69,9 @@ export const ChannelSurferMenu: React.FC<ChannelSurferMenuProps> = ({
   }, [activeIndex, filteredRoms, selectedRom, onSelectRom, onLaunchRom]);
 
   return (
-    <div className="w-full h-full bg-[#000d26] text-white flex flex-col select-none overflow-hidden text-base">
+    <div className="w-full h-full bg-[#000d26] text-white flex flex-col select-none overflow-hidden text-base p-0">
       {/* Top 45%: TV Broadcast Tuner Preview & Channel Info */}
-      <div className="h-[46%] grid grid-cols-1 md:grid-cols-12 border-b-4 border-[#eab308] bg-gradient-to-b from-[#001f54] to-[#000d26] p-3 sm:p-4 gap-4">
+      <div className="h-[46%] grid grid-cols-1 md:grid-cols-12 border-b-4 border-[#eab308] bg-gradient-to-b from-[#001f54] to-[#000d26] p-2.5 sm:p-3 gap-3">
         {/* Left: TV Test Card / Game Preview Box */}
         <div className="md:col-span-6 relative rounded-xl border-2 border-[#eab308] bg-black overflow-hidden flex flex-col justify-between p-3.5 shadow-xl">
           {selectedRom ? (
@@ -120,7 +120,7 @@ export const ChannelSurferMenu: React.FC<ChannelSurferMenuProps> = ({
         </div>
 
         {/* Right: Station ID & Synopsis */}
-        <div className="md:col-span-6 flex flex-col justify-between p-2">
+        <div className="md:col-span-6 flex flex-col justify-between p-1.5">
           <div>
             <div className="flex items-center gap-2 text-yellow-400">
               <Radio className="w-5 h-5 text-yellow-400" />
@@ -151,7 +151,7 @@ export const ChannelSurferMenu: React.FC<ChannelSurferMenuProps> = ({
       {/* Bottom 50%: The Electronic Program Guide Grid */}
       <div className="flex-1 flex flex-col min-h-0 bg-[#001433]">
         {/* Table Header with Quick Channel Search */}
-        <div className="bg-[#002b66] border-b-2 border-[#eab308] px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="bg-[#002b66] border-b-2 border-[#eab308] px-3 py-1.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-grotesk font-black uppercase tracking-wider text-[#eab308]">
               ELECTRONIC PROGRAM GUIDE ({filteredRoms.length} CHANNELS)
@@ -184,7 +184,7 @@ export const ChannelSurferMenu: React.FC<ChannelSurferMenuProps> = ({
         </div>
 
         {/* Columns sub-header */}
-        <div className="grid grid-cols-12 bg-[#00214d] text-sky-300 px-4 py-1.5 border-b border-blue-900 text-[11px] font-grotesk font-black uppercase tracking-wider">
+        <div className="grid grid-cols-12 bg-[#00214d] text-sky-300 px-3 py-1 border-b border-blue-900 text-[11px] font-grotesk font-black uppercase tracking-wider">
           <div className="col-span-2 sm:col-span-2">CH #</div>
           <div className="col-span-2 sm:col-span-2">NETWORK</div>
           <div className="col-span-5 sm:col-span-6">FEATURED TITLE</div>
@@ -206,7 +206,7 @@ export const ChannelSurferMenu: React.FC<ChannelSurferMenuProps> = ({
                   key={rom.id}
                   onClick={() => onSelectRom(rom)}
                   onDoubleClick={() => onLaunchRom(rom)}
-                  className={`grid grid-cols-12 px-4 py-2.5 border-b border-blue-950/60 cursor-pointer items-center transition-colors text-sm font-grotesk font-semibold ${
+                  className={`grid grid-cols-12 px-3 py-2 border-b border-blue-950/60 cursor-pointer items-center transition-colors text-sm font-grotesk font-semibold ${
                     isSelected
                       ? "bg-[#eab308] text-black font-bold shadow-lg"
                       : "hover:bg-[#00224d] text-sky-100"
@@ -236,7 +236,7 @@ export const ChannelSurferMenu: React.FC<ChannelSurferMenuProps> = ({
         </div>
 
         {/* Bottom Scrolling Retro Ticker */}
-        <div className="bg-[#000d26] border-t-2 border-[#eab308] px-3 py-1.5 flex items-center gap-3 overflow-hidden text-xs">
+        <div className="bg-[#000d26] border-t-2 border-[#eab308] px-2.5 py-1 flex items-center gap-2 overflow-hidden text-xs">
           <span className="bg-red-600 text-white font-grotesk font-black uppercase tracking-wider px-2.5 py-0.5 rounded text-[10px] flex-shrink-0 animate-pulse">
             PARTY BULLETIN
           </span>

@@ -287,7 +287,7 @@ export const ArcadeFrontendMenu: React.FC<ArcadeFrontendMenuProps> = ({
       />
 
       {/* Top ArcadeFrontend Header Bar */}
-      <header className="relative z-20 bg-zinc-950/90 border-b border-zinc-800/80 px-4 py-2.5 backdrop-blur-md flex items-center justify-between gap-3">
+      <header className="relative z-20 bg-zinc-950/90 border-b border-zinc-800/80 px-3 py-2 backdrop-blur-md flex items-center justify-between gap-2">
         {/* Logo & System Breadcrumb */}
         <div className="flex items-center gap-3">
           <div className="p-1.5 bg-gradient-to-br from-amber-500 to-red-600 rounded-xl shadow-md border border-amber-400/40">
@@ -405,11 +405,11 @@ export const ArcadeFrontendMenu: React.FC<ArcadeFrontendMenuProps> = ({
       </header>
 
       {/* Main Arcade Stage: Left Side Stage & Right Side Curved Wheel */}
-      <main className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 xl:gap-5 p-2.5 sm:p-4 md:p-5 overflow-hidden items-stretch">
+      <main className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2.5 lg:gap-3 xl:gap-4 p-2 sm:p-3 md:p-4 overflow-hidden items-stretch">
         {/* Left Side: Game Theme Stage / CRT Preview Showcase - Enlarged to the right filling empty space */}
-        <section className="lg:col-span-7 xl:col-span-7 2xl:col-span-7 flex flex-col justify-between h-full p-4 sm:p-5 md:p-6 rounded-3xl bg-zinc-950/75 border border-zinc-800/80 backdrop-blur-md shadow-2xl relative overflow-hidden">
+        <section className="lg:col-span-7 xl:col-span-7 2xl:col-span-7 flex flex-col justify-between h-full p-3 sm:p-4 md:p-5 rounded-3xl bg-zinc-950/75 border border-zinc-800/80 backdrop-blur-md shadow-2xl relative overflow-hidden">
           {/* Top Stage Badges & Arcade System Specs */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 bg-zinc-900 border border-zinc-700/80 rounded-lg text-xs font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
@@ -441,8 +441,8 @@ export const ArcadeFrontendMenu: React.FC<ArcadeFrontendMenuProps> = ({
           </div>
 
           {/* Central Showcase: Duo Presentation (Authentic Box Art + Expanded Animated CRT Preview Screen) */}
-          <div className="my-auto py-2 flex flex-col items-center w-full">
-            <div className="w-full flex items-center justify-center gap-4 sm:gap-6 lg:gap-8">
+          <div className="my-auto py-1 flex flex-col items-center w-full">
+            <div className="w-full flex items-center justify-center gap-3 sm:gap-4 lg:gap-6">
               {/* Authentic Google Drive Box Cover */}
               <div className="shrink-0 relative group/cover">
                 <BoxArtImage
@@ -575,7 +575,7 @@ export const ArcadeFrontendMenu: React.FC<ArcadeFrontendMenuProps> = ({
           </div>
 
           {/* Bottom Stage Controls & Details */}
-          <div className="space-y-3 pt-2">
+          <div className="space-y-2 pt-1">
             <div>
               <div className="flex items-baseline justify-between gap-4">
                 <h2 className="font-display font-black text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white uppercase tracking-tight drop-shadow-md truncate">
@@ -605,7 +605,7 @@ export const ArcadeFrontendMenu: React.FC<ArcadeFrontendMenuProps> = ({
             </div>
 
             {/* Main Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
               <button
                 id="arcade-play-btn"
                 onClick={() => onLaunchRom(activeGame)}
@@ -658,7 +658,7 @@ export const ArcadeFrontendMenu: React.FC<ArcadeFrontendMenuProps> = ({
         {/* Right Side: The HyperSpin Curved Radial Wheel (Shifted Left & Enlarged to Fill Empty Space) */}
         <section
           ref={wheelContainerRef}
-          className="lg:col-span-5 xl:col-span-5 2xl:col-span-5 h-full flex flex-col justify-center relative overflow-visible select-none lg:-ml-8 xl:-ml-14 2xl:-ml-20"
+          className="lg:col-span-5 xl:col-span-5 2xl:col-span-5 h-full flex flex-col justify-center relative overflow-visible select-none lg:-ml-6 xl:-ml-10 2xl:-ml-12"
         >
           {/* Wheel Control Arrows (Top / Bottom) */}
           <div className="absolute top-2 right-2 sm:right-4 md:right-6 z-30 flex gap-1.5">
@@ -700,7 +700,7 @@ export const ArcadeFrontendMenu: React.FC<ArcadeFrontendMenuProps> = ({
           </div>
 
           {/* Curved Wheel Items Container - Shifted leftward and enlarged to meet the Main GUI */}
-          <div className="relative w-full h-full min-h-[580px] flex flex-col justify-center items-end pr-2 sm:pr-3 md:pr-4 lg:pr-5">
+          <div className="relative w-full h-full min-h-[580px] flex flex-col justify-center items-end pr-1.5 sm:pr-2 md:pr-3 lg:pr-4">
             {visibleWheelItems.map((item) => {
               const { rom, offset, isSelected, xOffset, rotation, scale, opacity } = item;
 
@@ -790,7 +790,7 @@ export const ArcadeFrontendMenu: React.FC<ArcadeFrontendMenuProps> = ({
       </main>
 
       {/* Bottom Arcade HUD Prompt Bar */}
-      <footer className="relative z-20 bg-zinc-950/90 border-t border-zinc-850 px-4 py-2 text-xs font-mono font-semibold text-zinc-400 flex flex-wrap items-center justify-between gap-3">
+      <footer className="relative z-20 bg-zinc-950/90 border-t border-zinc-850 px-3 py-1.5 text-xs font-mono font-semibold text-zinc-400 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3 sm:gap-4">
           <span className="text-zinc-200 font-bold">CONTROLS:</span>
           <span>

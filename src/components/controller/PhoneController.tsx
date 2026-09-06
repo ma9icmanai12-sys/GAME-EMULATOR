@@ -311,6 +311,7 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
 
   const isConnected = status === "connected";
   const isP1 = slot === 1;
+  const isCompactPhone = isPortrait && typeof window !== "undefined" && window.innerWidth < 420;
 
   // Reusable Cross D-Pad Component
   const renderDpad = (sizeClass: string) => (
@@ -340,71 +341,68 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
       }}
       onMouseUp={() => clearDpad()}
       onMouseLeave={() => clearDpad()}
-      className={`relative ${sizeClass} touch-none cursor-pointer select-none filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.7)]`}
+      className={`relative ${sizeClass} touch-none cursor-pointer select-none rounded-[30%] border-[5px] border-[#24282d] bg-[#0d1012] shadow-[inset_0_10px_16px_rgba(0,0,0,0.87),0_8px_18px_rgba(0,0,0,0.5)] filter`}
     >
-      {/* Horizontal Cross Arm */}
-      <div className="absolute top-1/3 left-0 right-0 h-1/3 bg-[#18191d] rounded-xl border border-zinc-700 shadow-[inset_0_2px_4px_rgba(255,255,255,0.15)] flex items-center justify-between px-2">
+      <div className="absolute inset-1.5 rounded-[26%] border border-zinc-700/80 bg-[#171b1d] shadow-[inset_0_6px_12px_rgba(0,0,0,0.9)]" />
+
+      <div className="absolute top-1/3 left-0 right-0 h-1/3 bg-[#1b1d20] border-y border-zinc-700/80 shadow-[inset_0_2px_5px_rgba(255,255,255,0.08)] flex items-center justify-between px-2.5">
         <span
-          className={`text-zinc-500 font-bold text-lg select-none transition-transform ${
-            activeButtons.has("LEFT") ? "text-[#e52521] scale-125" : ""
+          className={`text-zinc-500 font-black text-[11px] select-none transition-all ${
+            activeButtons.has("LEFT") ? "text-[#d84d4d] scale-125" : ""
           }`}
         >
           ◀
         </span>
         <span
-          className={`text-zinc-500 font-bold text-lg select-none transition-transform ${
-            activeButtons.has("RIGHT") ? "text-[#e52521] scale-125" : ""
+          className={`text-zinc-500 font-black text-[11px] select-none transition-all ${
+            activeButtons.has("RIGHT") ? "text-[#d84d4d] scale-125" : ""
           }`}
         >
           ▶
         </span>
       </div>
 
-      {/* Vertical Cross Arm */}
-      <div className="absolute top-0 bottom-0 left-1/3 right-1/3 bg-[#18191d] rounded-xl border border-zinc-700 shadow-[inset_0_2px_4px_rgba(255,255,255,0.15)] flex flex-col items-center justify-between py-2">
+      <div className="absolute top-0 bottom-0 left-1/3 right-1/3 bg-[#1b1d20] border-x border-zinc-700/80 shadow-[inset_0_2px_5px_rgba(255,255,255,0.08)] flex flex-col items-center justify-between py-2.5">
         <span
-          className={`text-zinc-500 font-bold text-lg select-none transition-transform ${
-            activeButtons.has("UP") ? "text-[#e52521] scale-125" : ""
+          className={`text-zinc-500 font-black text-[11px] select-none transition-all ${
+            activeButtons.has("UP") ? "text-[#d84d4d] scale-125" : ""
           }`}
         >
           ▲
         </span>
         <span
-          className={`text-zinc-500 font-bold text-lg select-none transition-transform ${
-            activeButtons.has("DOWN") ? "text-[#e52521] scale-125" : ""
+          className={`text-zinc-500 font-black text-[11px] select-none transition-all ${
+            activeButtons.has("DOWN") ? "text-[#d84d4d] scale-125" : ""
           }`}
         >
           ▼
         </span>
       </div>
 
-      {/* Center Pivot Thumb Circle */}
       <div className="absolute top-1/3 left-1/3 w-1/3 h-1/3 flex items-center justify-center pointer-events-none">
-        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#111215] shadow-[inset_0_3px_6px_rgba(0,0,0,0.9),0_1px_1px_rgba(255,255,255,0.1)] border border-zinc-800 flex items-center justify-center">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#1f2025] shadow-inner" />
+        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#111215] shadow-[inset_0_5px_10px_rgba(0,0,0,0.95)] border border-zinc-800 flex items-center justify-center">
+          <div className="w-2 h-2 rounded-full bg-[#1f2025] shadow-inner" />
         </div>
       </div>
 
-      {/* Visual Glow on Pressed Arms */}
       {activeButtons.has("UP") && (
-        <div className="absolute top-0 left-1/3 w-1/3 h-1/3 bg-[#e52521]/25 rounded-t-xl pointer-events-none shadow-[0_0_12px_#e52521]" />
+        <div className="absolute top-1 left-1/3 w-1/3 h-[calc(33%-0.5rem)] bg-[#d84d4d]/20 rounded-t-xl pointer-events-none" />
       )}
       {activeButtons.has("DOWN") && (
-        <div className="absolute bottom-0 left-1/3 w-1/3 h-1/3 bg-[#e52521]/25 rounded-b-xl pointer-events-none shadow-[0_0_12px_#e52521]" />
+        <div className="absolute bottom-1 left-1/3 w-1/3 h-[calc(33%-0.5rem)] bg-[#d84d4d]/20 rounded-b-xl pointer-events-none" />
       )}
       {activeButtons.has("LEFT") && (
-        <div className="absolute top-1/3 left-0 w-1/3 h-1/3 bg-[#e52521]/25 rounded-l-xl pointer-events-none shadow-[0_0_12px_#e52521]" />
+        <div className="absolute top-1/3 left-1 w-[calc(33%-0.5rem)] h-1/3 bg-[#d84d4d]/20 rounded-l-xl pointer-events-none" />
       )}
       {activeButtons.has("RIGHT") && (
-        <div className="absolute top-1/3 right-0 w-1/3 h-1/3 bg-[#e52521]/25 rounded-r-xl pointer-events-none shadow-[0_0_12px_#e52521]" />
+        <div className="absolute top-1/3 right-1 w-[calc(33%-0.5rem)] h-1/3 bg-[#d84d4d]/20 rounded-r-xl pointer-events-none" />
       )}
     </div>
   );
 
   // Reusable SELECT & START Buttons
   const renderSelectStart = () => (
-    <div className="flex flex-row gap-4 sm:gap-6 items-center select-none">
-      {/* SELECT */}
+    <div className="flex flex-row gap-3 sm:gap-4 items-center select-none">
       <div className="flex flex-col items-center">
         <button
           id="btn-select"
@@ -418,16 +416,15 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
           }}
           onMouseDown={() => pressButton("SELECT")}
           onMouseUp={() => releaseButton("SELECT")}
-          className={`w-11 sm:w-14 md:w-16 h-4 sm:h-5 md:h-6 rounded-full bg-[#16171b] border border-zinc-700 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9),0_2px_4px_rgba(0,0,0,0.5)] transition-all cursor-pointer ${
-            activeButtons.has("SELECT") ? "scale-95 bg-[#e52521] shadow-[0_0_10px_#e52521]" : "active:scale-95"
+          className={`w-9 sm:w-11 md:w-12 h-4 sm:h-5 md:h-5 rounded-full bg-[#171a1d] border border-zinc-700 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9),0_2px_4px_rgba(0,0,0,0.45)] transition-all cursor-pointer ${
+            activeButtons.has("SELECT") ? "scale-95 bg-[#d12b2d]" : "active:scale-95"
           }`}
         />
-        <span className="font-display font-black text-[9px] sm:text-[10px] text-[#e52521] mt-1.5 tracking-widest uppercase">
+        <span className="font-display font-black text-[8px] sm:text-[9px] text-[#d12b2d] mt-1.5 tracking-widest uppercase">
           SELECT
         </span>
       </div>
 
-      {/* START */}
       <div className="flex flex-col items-center">
         <button
           id="btn-start"
@@ -441,11 +438,11 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
           }}
           onMouseDown={() => pressButton("START")}
           onMouseUp={() => releaseButton("START")}
-          className={`w-11 sm:w-14 md:w-16 h-4 sm:h-5 md:h-6 rounded-full bg-[#16171b] border border-zinc-700 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9),0_2px_4px_rgba(0,0,0,0.5)] transition-all cursor-pointer ${
-            activeButtons.has("START") ? "scale-95 bg-[#e52521] shadow-[0_0_10px_#e52521]" : "active:scale-95"
+          className={`w-9 sm:w-11 md:w-12 h-4 sm:h-5 md:h-5 rounded-full bg-[#171a1d] border border-zinc-700 shadow-[inset_0_2px_4px_rgba(0,0,0,0.9),0_2px_4px_rgba(0,0,0,0.45)] transition-all cursor-pointer ${
+            activeButtons.has("START") ? "scale-95 bg-[#d12b2d]" : "active:scale-95"
           }`}
         />
-        <span className="font-display font-black text-[9px] sm:text-[10px] text-[#e52521] mt-1.5 tracking-widest uppercase">
+        <span className="font-display font-black text-[8px] sm:text-[9px] text-[#d12b2d] mt-1.5 tracking-widest uppercase">
           START
         </span>
       </div>
@@ -454,8 +451,7 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
 
   // Reusable Turbo Buttons
   const renderTurboButtons = () => (
-    <div className="flex gap-3 sm:gap-6 items-center">
-      {/* Turbo B */}
+    <div className="flex gap-2 sm:gap-4 items-center">
       <div className="flex flex-col items-center">
         <button
           id="btn-turbo-b"
@@ -472,18 +468,17 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
           onMouseDown={() => setIsTurboBHeld(true)}
           onMouseUp={() => setIsTurboBHeld(false)}
           onMouseLeave={() => setIsTurboBHeld(false)}
-          className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#991b1b] border-2 border-[#ef4444] text-white flex items-center justify-center shadow-lg transition-all cursor-pointer ${
+          className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-[#991b1b] border-2 border-[#ef4444] text-white flex items-center justify-center shadow-[0_4px_12px_rgba(239,68,68,0.35)] transition-all cursor-pointer ${
             isTurboBHeld ? "scale-90 bg-[#ef4444] shadow-[0_0_15px_#ef4444]" : "active:scale-95"
           }`}
         >
-          <Zap className="w-3.5 h-3.5 fill-white" />
+          <Zap className="w-3 h-3 fill-white" />
         </button>
-        <span className="text-[8px] sm:text-[9px] font-mono font-black text-zinc-400 mt-1 uppercase">
+        <span className="text-[7px] sm:text-[8px] font-mono font-black text-zinc-400 mt-1 uppercase">
           TURBO B
         </span>
       </div>
 
-      {/* Turbo A */}
       <div className="flex flex-col items-center">
         <button
           id="btn-turbo-a"
@@ -500,13 +495,13 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
           onMouseDown={() => setIsTurboAHeld(true)}
           onMouseUp={() => setIsTurboAHeld(false)}
           onMouseLeave={() => setIsTurboAHeld(false)}
-          className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#991b1b] border-2 border-[#ef4444] text-white flex items-center justify-center shadow-lg transition-all cursor-pointer ${
+          className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-[#991b1b] border-2 border-[#ef4444] text-white flex items-center justify-center shadow-[0_4px_12px_rgba(239,68,68,0.35)] transition-all cursor-pointer ${
             isTurboAHeld ? "scale-90 bg-[#ef4444] shadow-[0_0_15px_#ef4444]" : "active:scale-95"
           }`}
         >
-          <Zap className="w-3.5 h-3.5 fill-white" />
+          <Zap className="w-3 h-3 fill-white" />
         </button>
-        <span className="text-[8px] sm:text-[9px] font-mono font-black text-zinc-400 mt-1 uppercase">
+        <span className="text-[7px] sm:text-[8px] font-mono font-black text-zinc-400 mt-1 uppercase">
           TURBO A
         </span>
       </div>
@@ -515,9 +510,8 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
 
   // Reusable Primary Action Buttons (B & A)
   const renderActionButtons = (sizeClass: string, fontClass: string = "text-xl sm:text-2xl") => (
-    <div className="flex gap-3 sm:gap-6 items-center">
-      {/* Button B */}
-      <div className="flex flex-col items-center transform translate-y-2 sm:translate-y-4">
+    <div className="flex gap-2 sm:gap-4 items-center">
+      <div className="flex flex-col items-center transform translate-y-2 sm:translate-y-3">
         <button
           id="btn-b"
           onTouchStart={(e) => {
@@ -530,25 +524,26 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
           }}
           onMouseDown={() => pressButton("B")}
           onMouseUp={() => releaseButton("B")}
-          className={`${sizeClass} rounded-full bg-gradient-to-br from-[#e52521] via-[#c81e1a] to-[#991512] border-4 border-[#7f1d1d] flex items-center justify-center shadow-[0_8px_20px_rgba(229,37,33,0.45),inset_0_2px_4px_rgba(255,255,255,0.4)] transition-all cursor-pointer ${
+          className={`${sizeClass} rounded-full bg-gradient-to-br from-[#d94949] via-[#b51d20] to-[#721014] border-[5px] border-[#4b080d] flex items-center justify-center shadow-[0_8px_16px_rgba(0,0,0,0.35),inset_0_2px_5px_rgba(255,255,255,0.18)] transition-all cursor-pointer ${
             activeButtons.has("B")
-              ? "scale-90 bg-[#ef4444] shadow-[0_0_25px_#ef4444]"
+              ? "scale-95 bg-[#d94949]"
               : "active:scale-95"
           }`}
         >
-          <span className={`font-display font-black ${fontClass} text-white drop-shadow-md`}>
+          <span className={`font-display font-black ${fontClass} text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.7)]`}>
             B
           </span>
         </button>
-        <div className="mt-1.5 px-2 py-0.5 rounded bg-[#111215] border border-[#e52521]/60">
-          <span className="font-display font-black text-[9px] sm:text-[10px] text-[#e52521] uppercase tracking-wider">
-            BUTTON B
-          </span>
-        </div>
+        {!isCompactPhone && (
+          <div className="mt-1.5 px-2 py-0.5 rounded bg-[#111215] border border-[#d63a3a]/60">
+            <span className="font-display font-black text-[8px] sm:text-[9px] text-[#d63a3a] uppercase tracking-wider">
+              BUTTON B
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Button A */}
-      <div className="flex flex-col items-center transform -translate-y-2 sm:-translate-y-4">
+      <div className="flex flex-col items-center transform -translate-y-2 sm:-translate-y-3">
         <button
           id="btn-a"
           onTouchStart={(e) => {
@@ -561,168 +556,151 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
           }}
           onMouseDown={() => pressButton("A")}
           onMouseUp={() => releaseButton("A")}
-          className={`${sizeClass} rounded-full bg-gradient-to-br from-[#e52521] via-[#c81e1a] to-[#991512] border-4 border-[#7f1d1d] flex items-center justify-center shadow-[0_8px_20px_rgba(229,37,33,0.45),inset_0_2px_4px_rgba(255,255,255,0.4)] transition-all cursor-pointer ${
+          className={`${sizeClass} rounded-full bg-gradient-to-br from-[#d94949] via-[#b51d20] to-[#721014] border-[5px] border-[#4b080d] flex items-center justify-center shadow-[0_8px_16px_rgba(0,0,0,0.35),inset_0_2px_5px_rgba(255,255,255,0.18)] transition-all cursor-pointer ${
             activeButtons.has("A")
-              ? "scale-90 bg-[#ef4444] shadow-[0_0_25px_#ef4444]"
+              ? "scale-95 bg-[#d94949]"
               : "active:scale-95"
           }`}
         >
-          <span className={`font-display font-black ${fontClass} text-white drop-shadow-md`}>
+          <span className={`font-display font-black ${fontClass} text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.7)]`}>
             A
           </span>
         </button>
-        <div className="mt-1.5 px-2 py-0.5 rounded bg-[#111215] border border-[#e52521]/60">
-          <span className="font-display font-black text-[9px] sm:text-[10px] text-[#e52521] uppercase tracking-wider">
-            BUTTON A
-          </span>
-        </div>
+        {!isCompactPhone && (
+          <div className="mt-1.5 px-2 py-0.5 rounded bg-[#111215] border border-[#d63a3a]/60">
+            <span className="font-display font-black text-[8px] sm:text-[9px] text-[#d63a3a] uppercase tracking-wider">
+              BUTTON A
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
 
   return (
     <div className="fixed inset-0 bg-[#0a0a0c] text-white flex flex-col justify-between select-none touch-none overflow-hidden font-sans">
-      {/* Top Controller Status Bar */}
-      <header
-        className={`${!isPortrait ? "h-10 sm:h-12" : "h-12 sm:h-14"} bg-zinc-950 border-b border-zinc-800 px-3 sm:px-6 flex items-center justify-between z-30 shrink-0`}
-      >
-        <div className="flex items-center gap-2 sm:gap-3">
-          {onExit && (
-            <button
-              onClick={onExit}
-              className="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-lg border border-zinc-700 transition-colors cursor-pointer mr-1"
-              title="Exit Controller to TV View"
+      {/* Bottom Controller Utility Bar */}
+      <div className="w-full bg-zinc-950 border-t border-zinc-800 px-3 sm:px-6 py-2 z-30 shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {onExit && (
+              <button
+                onClick={onExit}
+                className="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-lg border border-zinc-700 transition-colors cursor-pointer"
+                title="Exit Controller to TV View"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-display font-black text-[11px] sm:text-xs uppercase tracking-wider shadow-md border ${
+                isP1
+                  ? "bg-red-600 border-red-400 text-white shadow-red-950/60"
+                  : slot === 2
+                  ? "bg-blue-600 border-blue-400 text-white shadow-blue-950/60"
+                  : "bg-zinc-800 border-zinc-700 text-zinc-300"
+              }`}
             >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          )}
-
-          {/* Player Badge */}
-          <div
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-display font-black text-[11px] sm:text-xs uppercase tracking-wider shadow-md border ${
-              isP1
-                ? "bg-red-600 border-red-400 text-white shadow-red-950/60"
-                : slot === 2
-                ? "bg-blue-600 border-blue-400 text-white shadow-blue-950/60"
-                : "bg-zinc-800 border-zinc-700 text-zinc-300"
-            }`}
-          >
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            <span>{isP1 ? "PLAYER 1" : slot === 2 ? "PLAYER 2" : "SPECTATOR"}</span>
-          </div>
-
-          {/* TV Link Status Badge */}
-          {!hostConnected ? (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-mono font-bold tracking-wider bg-amber-500/20 border border-amber-500/60 text-amber-300 animate-pulse">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              <span>WAITING FOR TV</span>
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span>{isP1 ? "PLAYER 1" : slot === 2 ? "PLAYER 2" : "SPECTATOR"}</span>
             </div>
-          ) : (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-mono font-bold tracking-wider bg-emerald-500/15 border border-emerald-500/40 text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>TV LINKED</span>
-            </div>
-          )}
 
-          {/* Room info */}
-          {!isPortrait && (
+            {!hostConnected ? (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-mono font-bold tracking-wider bg-amber-500/20 border border-amber-500/60 text-amber-300 animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <span>WAITING FOR TV</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-mono font-bold tracking-wider bg-emerald-500/15 border border-emerald-500/40 text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span>TV LINKED</span>
+              </div>
+            )}
+
             <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-zinc-400">
               <span>ROOM:</span>
               <span className="text-amber-400 font-bold tracking-wider">{roomId}</span>
             </div>
-          )}
-
-          {isPortrait && (
-            <div className="hidden md:flex items-center gap-1 text-xs font-mono text-zinc-400">
-              <span>ROOM:</span>
-              <span className="text-amber-400 font-bold tracking-wider">{roomId}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Right HUD Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Quick Menu Button (Select + Start) */}
-          <button
-            onClick={() => {
-              sendButtonEvent("SELECT", true);
-              sendButtonEvent("START", true);
-              triggerHaptic();
-              playClickFeedback();
-              setTimeout(() => {
-                sendButtonEvent("SELECT", false);
-                sendButtonEvent("START", false);
-              }, 200);
-            }}
-            className="flex items-center gap-1 px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 hover:text-white text-xs font-mono font-bold tracking-wider transition-colors cursor-pointer"
-            title="Menu (Select + Start)"
-          >
-            <span>MENU</span>
-          </button>
-
-          {/* Latency badge */}
-          <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg">
-            {isConnected ? (
-              <Wifi className="w-3 h-3 text-emerald-400" />
-            ) : (
-              <WifiOff className="w-3 h-3 text-red-500 animate-pulse" />
-            )}
-            <span>{isConnected ? `${ping}ms` : "CONNECTING"}</span>
           </div>
 
-          {/* Orientation switch */}
-          <button
-            onClick={() => setForceLandscape(!forceLandscape)}
-            className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
-              forceLandscape
-                ? "bg-red-950/80 border-red-500 text-red-300"
-                : "bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-zinc-300"
-            }`}
-            title="Rotate Controller Layout"
-          >
-            <Smartphone className={`w-3.5 h-3.5 ${forceLandscape ? "rotate-90 text-red-400" : ""}`} />
-          </button>
+          <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+            <button
+              onClick={() => {
+                sendButtonEvent("SELECT", true);
+                sendButtonEvent("START", true);
+                triggerHaptic();
+                playClickFeedback();
+                setTimeout(() => {
+                  sendButtonEvent("SELECT", false);
+                  sendButtonEvent("START", false);
+                }, 200);
+              }}
+              className="flex items-center gap-1 px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 hover:text-white text-[10px] sm:text-xs font-mono font-bold tracking-wider transition-colors cursor-pointer"
+              title="Menu (Select + Start)"
+            >
+              <span>MENU</span>
+            </button>
 
-          {/* Switch Player Slot */}
-          <button
-            onClick={() => {
-              const nextSlot = slot === 1 ? 2 : 1;
-              socket?.send({
-                type: "join-controller",
-                roomId,
-                requestedSlot: nextSlot,
-              });
-            }}
-            className="flex items-center gap-1 px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 hover:text-white text-xs font-grotesk font-bold uppercase tracking-wider transition-colors cursor-pointer"
-            title="Switch Player Slot (P1 / P2)"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span>P{slot === 1 ? 2 : 1}</span>
-          </button>
+            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg">
+              {isConnected ? (
+                <Wifi className="w-3 h-3 text-emerald-400" />
+              ) : (
+                <WifiOff className="w-3 h-3 text-red-500 animate-pulse" />
+              )}
+              <span>{isConnected ? `${ping}ms` : "CONNECTING"}</span>
+            </div>
 
-          {/* Sound Toggle */}
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 transition-colors cursor-pointer"
-            title="Toggle Sound"
-          >
-            {soundEnabled ? (
-              <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-            ) : (
-              <VolumeX className="w-3.5 h-3.5 text-zinc-500" />
-            )}
-          </button>
+            <button
+              onClick={() => setForceLandscape(!forceLandscape)}
+              className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                forceLandscape
+                  ? "bg-red-950/80 border-red-500 text-red-300"
+                  : "bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-zinc-300"
+              }`}
+              title="Rotate Controller Layout"
+            >
+              <Smartphone className={`w-3.5 h-3.5 ${forceLandscape ? "rotate-90 text-red-400" : ""}`} />
+            </button>
 
-          {/* Fullscreen Toggle */}
-          <button
-            onClick={toggleFullscreen}
-            className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 transition-colors cursor-pointer"
-            title="Fullscreen Edge-to-Edge"
-          >
-            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-          </button>
+            <button
+              onClick={() => {
+                const nextSlot = slot === 1 ? 2 : 1;
+                socket?.send({
+                  type: "join-controller",
+                  roomId,
+                  requestedSlot: nextSlot,
+                });
+              }}
+              className="flex items-center gap-1 px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 hover:text-white text-xs font-grotesk font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              title="Switch Player Slot (P1 / P2)"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>P{slot === 1 ? 2 : 1}</span>
+            </button>
+
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 transition-colors cursor-pointer"
+              title="Toggle Sound"
+            >
+              {soundEnabled ? (
+                <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <VolumeX className="w-3.5 h-3.5 text-zinc-500" />
+              )}
+            </button>
+
+            <button
+              onClick={toggleFullscreen}
+              className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 transition-colors cursor-pointer"
+              title="Fullscreen Edge-to-Edge"
+            >
+              {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Controller Area: Adaptive Layout */}
       {isPortrait && !forceLandscape ? (
@@ -730,11 +708,11 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
         <main className="flex-1 flex flex-col justify-end p-3 max-w-md mx-auto w-full h-full overflow-hidden select-none">
           {/* Upper Controller Section */}
           <div className="flex-1 flex flex-col justify-start min-h-0">
-            <div className="bg-[#caccd1] rounded-2xl p-3 border-4 border-[#9a9ea7] shadow-xl relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute inset-x-2 top-2 bottom-2 bg-[#1b1c20] rounded-xl border-2 border-[#121316] pointer-events-none" />
+            <div className="bg-gradient-to-b from-[#dde1e5] to-[#c2c6cb] rounded-[1.75rem] p-3 border-[5px] border-[#7e8792] shadow-[0_12px_20px_rgba(0,0,0,0.38)] relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute inset-x-2.5 top-2.5 bottom-2.5 bg-[#1b1c20] rounded-[1rem] border-2 border-[#121316] pointer-events-none" />
 
               <div className="relative z-10 flex justify-between items-center px-2">
-                <div className="font-display font-black text-lg text-[#e52521] uppercase italic tracking-tight">
+                <div className="font-display font-black text-lg text-[#d84d4d] uppercase italic tracking-tight drop-shadow-[0_1px_0_rgba(0,0,0,0.35)]">
                   Nintendo
                 </div>
                 <span className="px-2 py-0.5 rounded bg-zinc-800 text-white font-mono font-black text-[10px]">
@@ -794,8 +772,8 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
         </main>
       ) : (
         /* WIDESCREEN / LANDSCAPE CLASSIC NES CONTROLLER BODY */
-        <main className="flex-1 flex items-center justify-center p-1 sm:p-2 md:p-4 relative overflow-hidden">
-          <div className="w-full h-full max-w-[calc(100vw-0.5rem)] max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-4rem)] bg-[#caccd1] rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 md:p-5 border-4 sm:border-8 border-[#9a9ea7] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(255,255,255,0.6)] flex flex-col justify-between relative overflow-hidden">
+        <main className="flex-1 flex items-center justify-center p-0 sm:p-1 md:p-2 relative overflow-hidden">
+          <div className="w-full h-[calc(100vh-4.5rem)] max-w-[calc(100vw-0.5rem)] max-h-[calc(100vh-4.5rem)] bg-gradient-to-b from-[#dfe3e7] to-[#c8ccd0] rounded-xl sm:rounded-[1.75rem] p-2 sm:p-3 md:p-4 border-[5px] sm:border-[6px] border-[#7b838d] shadow-[0_20px_46px_rgba(0,0,0,0.72),inset_0_2px_4px_rgba(255,255,255,0.32)] flex flex-col justify-between relative overflow-hidden">
             {/* Corner Hardware Screw Details */}
             <div className="absolute top-2.5 left-2.5 w-2.5 h-2.5 rounded-full bg-[#838791] shadow-inner border border-zinc-500/40" />
             <div className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-[#838791] shadow-inner border border-zinc-500/40" />
@@ -814,18 +792,18 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
             </div>
 
             {/* Controller Top Branding Band */}
-            <div className="relative z-10 flex justify-between items-center px-2 sm:px-4">
+            <div className="relative z-10 flex justify-between items-center px-2 sm:px-3">
               <div className="flex items-center gap-1.5 sm:gap-2 overflow-hidden">
-                <div className="font-display font-black text-base sm:text-lg md:text-xl text-[#e52521] tracking-tight uppercase italic drop-shadow-sm">
+                <div className="font-display font-black text-lg sm:text-xl md:text-2xl text-[#d84d4d] tracking-tight uppercase italic drop-shadow-[0_1px_0_rgba(0,0,0,0.35)] leading-none">
                   Nintendo
                 </div>
-                <span className="text-[8px] sm:text-[9px] font-mono font-black text-zinc-600 uppercase tracking-widest hidden xs:inline">
+                <span className="text-[8px] sm:text-[9px] font-mono font-black text-zinc-600 uppercase tracking-widest hidden sm:inline">
                   ENTERTAINMENT SYSTEM
                 </span>
               </div>
 
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-mono font-bold text-[8px] sm:text-[9px] text-zinc-600 uppercase tracking-widest hidden sm:inline">
+                <span className="font-mono font-bold text-[8px] sm:text-[9px] text-zinc-600 uppercase tracking-widest hidden md:inline">
                   WIRELESS CONTROLLER
                 </span>
                 <span className="px-1.5 sm:px-2 py-0.5 rounded bg-zinc-800 text-white font-mono font-black text-[8px] sm:text-[10px]">
@@ -835,14 +813,14 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
             </div>
 
             {/* Controller Interactive Surface: Left (D-PAD) | Center (SELECT/START) | Right (B / A) */}
-            <div className="relative z-20 flex-1 grid grid-cols-12 items-center gap-1.5 sm:gap-3 my-1 sm:my-2">
+            <div className="relative z-20 flex-1 grid grid-cols-12 items-center gap-1.5 sm:gap-2 my-1 sm:my-1.5">
               {/* LEFT: D-Pad */}
               <div className="col-span-5 flex items-center justify-center">
-                {renderDpad("w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40")}
+                {renderDpad("w-30 h-30 sm:w-36 sm:h-36 md:w-40 md:h-40")}
               </div>
 
               {/* CENTER: SELECT and START */}
-              <div className="col-span-2 flex flex-col items-center justify-center gap-4 sm:gap-6">
+              <div className="col-span-2 flex flex-col items-center justify-center gap-4 sm:gap-5">
                 <div className="transform -rotate-12">
                   {renderSelectStart()}
                 </div>
@@ -851,12 +829,12 @@ export const PhoneController: React.FC<PhoneControllerProps> = ({
               {/* RIGHT: Turbo and Action Buttons */}
               <div className="col-span-5 flex flex-col items-center justify-center gap-2 sm:gap-3">
                 {renderTurboButtons()}
-                {renderActionButtons("w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16", "text-base sm:text-lg md:text-xl")}
+                {renderActionButtons("w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18", "text-lg sm:text-xl md:text-2xl")}
               </div>
             </div>
 
             {/* Bottom Footnote Bar */}
-            <div className="relative z-10 flex justify-between items-center text-[7px] sm:text-[9px] text-zinc-600 px-2 sm:px-4">
+            <div className="relative z-10 flex justify-between items-center text-[7px] sm:text-[8px] text-zinc-600 px-2 sm:px-3">
               <span className="font-mono font-bold uppercase tracking-wider text-zinc-500">
                 LOW-LATENCY WEBSOCKET MULTIPLAYER
               </span>

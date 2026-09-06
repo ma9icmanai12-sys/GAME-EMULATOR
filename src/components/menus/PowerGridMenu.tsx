@@ -77,9 +77,9 @@ export const PowerGridMenu: React.FC<PowerGridMenuProps> = ({
   }, [cleanQuery, filter, filteredRoms, selectedRom, onSelectRom]);
 
   return (
-    <div className="w-full h-full bg-[#0d0714] text-white flex flex-col p-4 sm:p-5 select-none overflow-hidden font-sans">
+    <div className="w-full h-full bg-[#0d0714] text-white flex flex-col p-3 sm:p-4 select-none overflow-hidden font-sans">
       {/* Power Header */}
-      <div className="flex flex-col gap-2.5 pb-3 border-b border-fuchsia-950/80">
+      <div className="flex flex-col gap-2 pb-2.5 border-b border-fuchsia-950/80">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="p-2 sm:p-2.5 bg-gradient-to-tr from-fuchsia-600 to-cyan-400 rounded-xl shadow-md">
@@ -216,9 +216,9 @@ export const PowerGridMenu: React.FC<PowerGridMenuProps> = ({
       </div>
 
       {/* Main Grid + Inspector */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 mt-3 min-h-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 mt-2.5 min-h-0 overflow-hidden">
         {/* Left: 3-column Card Grid with Orange Scrollbar */}
-        <div className="md:col-span-8 overflow-y-auto pr-2 min-h-0 powergrid-scrollbar">
+        <div className="md:col-span-8 overflow-y-auto pr-1.5 min-h-0 powergrid-scrollbar">
           {filteredRoms.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
               <Search className="w-10 h-10 text-fuchsia-600 animate-pulse" />
@@ -239,7 +239,7 @@ export const PowerGridMenu: React.FC<PowerGridMenuProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {filteredRoms.map((rom, idx) => {
                 const isSelected = selectedRom?.id === rom.id;
                 const dotColor = DOT_PALETTE[idx % DOT_PALETTE.length];
@@ -291,7 +291,7 @@ export const PowerGridMenu: React.FC<PowerGridMenuProps> = ({
         </div>
 
         {/* Right: Featured Holographic Box Art & Quick Play Deck */}
-        <div className="md:col-span-4 flex flex-col justify-between bg-[#120a1c]/90 rounded-2xl border border-fuchsia-900/40 p-4 sm:p-5 relative overflow-hidden shadow-2xl">
+        <div className="md:col-span-4 flex flex-col justify-between bg-[#120a1c]/90 rounded-2xl border border-fuchsia-900/40 p-3 sm:p-4 relative overflow-hidden shadow-2xl">
           {selectedRom ? (
             <>
               <div>

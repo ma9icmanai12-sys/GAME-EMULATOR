@@ -91,9 +91,9 @@ export const CartridgeShelfMenu: React.FC<CartridgeShelfMenuProps> = ({
   }, [activeIndex, filteredRoms, selectedRom, onSelectRom, onLaunchRom]);
 
   return (
-    <div className="w-full h-full bg-[#0a0a0c] text-white flex flex-col p-4 sm:p-5 overflow-hidden select-none">
+    <div className="w-full h-full bg-[#0a0a0c] text-white flex flex-col p-3 sm:p-4 overflow-hidden select-none">
       {/* Top Header & Search Bar */}
-      <div className="flex flex-col gap-2.5 pb-3 border-b border-zinc-800">
+      <div className="flex flex-col gap-2 pb-2.5 border-b border-zinc-800">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -176,15 +176,15 @@ export const CartridgeShelfMenu: React.FC<CartridgeShelfMenuProps> = ({
       </div>
 
       {/* Main Two-Column View: Cartridge Shelf on Left, Inspection Deck on Right */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-5 mt-3 min-h-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 mt-2.5 min-h-0 overflow-hidden">
         {/* Left Column: Scrolling 3D Cartridge Rack */}
-        <div className="md:col-span-7 flex flex-col min-h-0 bg-zinc-950/80 rounded-2xl border-2 border-zinc-800 p-3">
+        <div className="md:col-span-7 flex flex-col min-h-0 bg-zinc-950/80 rounded-2xl border-2 border-zinc-800 p-2.5">
           <div className="text-[11px] font-grotesk font-bold uppercase tracking-wider text-zinc-400 mb-2.5 flex justify-between">
             <span>BROWSE CARTRIDGES [↑/↓ or scroll]</span>
             <span className="text-zinc-500">FORMAT: NES-NROM/MMC</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
             {filteredRoms.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-4 text-center space-y-3">
                 <Search className="w-10 h-10 text-zinc-600 animate-pulse" />
@@ -266,7 +266,7 @@ export const CartridgeShelfMenu: React.FC<CartridgeShelfMenuProps> = ({
         </div>
 
         {/* Right Column: Cartridge Inspection & Box-Art Preview */}
-        <div className="md:col-span-5 flex flex-col justify-between bg-zinc-900/90 rounded-2xl border-2 border-zinc-800 p-4 relative overflow-hidden">
+        <div className="md:col-span-5 flex flex-col justify-between bg-zinc-900/90 rounded-2xl border-2 border-zinc-800 p-3 relative overflow-hidden">
           {selectedRom ? (
             <>
               {/* Top Banner with Auto-Generated Box Art */}

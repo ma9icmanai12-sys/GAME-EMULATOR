@@ -46,12 +46,12 @@ export const LivingRoomMenu: React.FC<LivingRoomMenuProps> = ({
   };
 
   return (
-    <div className="w-full h-full bg-[#18111e] text-zinc-100 flex flex-col justify-between p-4 sm:p-6 select-none overflow-hidden relative">
+    <div className="w-full h-full bg-[#18111e] text-zinc-100 flex flex-col justify-between p-3 sm:p-4 select-none overflow-hidden relative">
       {/* Retro Wall Background Ambience */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#24172f] via-[#150d1d] to-[#0d0714] pointer-events-none opacity-90" />
       
       {/* Top Living Room Header */}
-      <div className="relative z-10 flex items-center justify-between border-b border-zinc-800/80 pb-3">
+      <div className="relative z-10 flex items-center justify-between border-b border-zinc-800/80 pb-2.5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-950/80 border border-amber-600/40 flex items-center justify-center text-amber-400 shadow-md">
             <Tv className="w-5 h-5" />
@@ -78,7 +78,7 @@ export const LivingRoomMenu: React.FC<LivingRoomMenuProps> = ({
       </div>
 
       {/* Main Living Room Scene */}
-      <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center py-4 overflow-hidden">
+      <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-center py-2.5 overflow-hidden">
         {/* Left: TV Display Stage */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center h-full">
           <div className="relative w-full max-w-lg aspect-[4/3] bg-zinc-950 rounded-3xl border-8 border-[#3b271d] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_40px_rgba(0,0,0,0.9)] p-4 flex flex-col justify-between overflow-hidden">
@@ -130,7 +130,7 @@ export const LivingRoomMenu: React.FC<LivingRoomMenuProps> = ({
         {/* Right: Selected Cartridge Details & Power Button */}
         <div className="lg:col-span-5 flex flex-col justify-center h-full max-w-md mx-auto w-full">
           {currentRom ? (
-            <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+            <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-red-950/80 border border-red-500/50 text-red-300">
@@ -172,7 +172,7 @@ export const LivingRoomMenu: React.FC<LivingRoomMenuProps> = ({
       </div>
 
       {/* Bottom Cartridge Stack Carousel */}
-      <div className="relative z-10 border-t border-zinc-800/80 pt-3">
+      <div className="relative z-10 border-t border-zinc-800/80 pt-2.5">
         <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-zinc-800">
           {filteredRoms.slice(0, 40).map((r) => {
             const isSelected = r.id === currentRom?.id;
